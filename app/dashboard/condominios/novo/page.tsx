@@ -128,7 +128,17 @@ export default function NovoCondominioPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="saldo_inicial">Saldo Inicial (R$)</Label>
-                <Input id="saldo_inicial" type="number" step="0.01" value={formData.saldo_inicial} onChange={e => setFormData({...formData, saldo_inicial: parseFloat(e.target.value) || 0})} />
+                <Input 
+                  id="saldo_inicial" 
+                  type="text" 
+                  value={formData.saldo_inicial.toFixed(2).replace('.', ',')} 
+                  onChange={e => {
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (value === '') value = '0';
+                    const numericValue = parseInt(value, 10) / 100;
+                    setFormData({...formData, saldo_inicial: numericValue});
+                  }} 
+                />
               </div>
             </div>
 
