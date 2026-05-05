@@ -77,7 +77,7 @@ export function FaturaView({ fatura }: { fatura: any }) {
             <div className="flex justify-between items-start">
               <div>
                 <CardTitle className="text-2xl uppercase">{fatura.condominio.nome}</CardTitle>
-                <p className="text-sm">{fatura.condominio.endereco}, {fatura.condominio.cidade} - {fatura.condominio.uf}</p>
+                <p className="text-sm">{fatura.condominio.endereco}, {fatura.condominio.numero || 'S/N'}, {fatura.condominio.cidade} - {fatura.condominio.uf}</p>
                 <p className="text-sm">CNPJ: {fatura.condominio.cnpj}</p>
               </div>
               <div className="text-right">

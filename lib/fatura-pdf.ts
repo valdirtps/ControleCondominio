@@ -67,7 +67,7 @@ export async function generateFaturaPDFBuffer(fatura: any): Promise<Buffer> {
   // == HEADER ==
   drawText(fatura.condominio?.nome?.toUpperCase() || '', 50, 16, fontBold);
   moveDown(20);
-  drawText(`${fatura.condominio?.endereco || ''}, ${fatura.condominio?.cidade || ''} - ${fatura.condominio?.uf || ''}`, 50, 10, fontRegular, colorGray);
+  drawText(`${fatura.condominio?.endereco || ''}, ${fatura.condominio?.numero || 'S/N'} - ${fatura.condominio?.cidade || ''} - ${fatura.condominio?.uf || ''}`, 50, 10, fontRegular, colorGray);
   moveDown(12);
   drawText(`CNPJ: ${fatura.condominio?.cnpj || ''}`, 50, 10, fontRegular, colorGray);
   

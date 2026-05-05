@@ -60,23 +60,33 @@ export default async function DashboardPage() {
     return new Date(Date.UTC(nextYear, nextMonth, diaVencimento, 12, 0, 0));
   };
 
+  const earliestParametro = condominio.parametros.length > 0
+    ? condominio.parametros.reduce((min, p) => p.mes_ano < min ? p.mes_ano : min, '9999-99')
+    : '0000-00';
+
   // Calculate cash flow
   const allTransactions = [
-    ...condominio.despesas.map(d => ({
-      data: getVencimentoForCycle(d.referente, d.data_pagamento),
-      entrada: 0,
-      saida: d.valor,
-    })),
-    ...condominio.creditosExtras.map(c => ({
-      data: c.data_vencimento || getVencimentoForCycle(c.mes_ano || c.referente, c.data_pagamento || c.data_lancamento),
-      entrada: c.valor,
-      saida: 0,
-    })),
-    ...condominio.faturas.filter(f => f.status === 'PAGO').map(f => ({
-      data: f.data_vencimento,
-      entrada: f.valor_pago || f.valor_total,
-      saida: 0,
-    })),
+    ...condominio.despesas
+      .filter(d => d.referente >= earliestParametro)
+      .map(d => ({
+        data: d.data_pagamento,
+        entrada: 0,
+        saida: d.valor,
+      })),
+    ...condominio.creditosExtras
+      .filter(c => (c.mes_ano || c.referente) >= earliestParametro)
+      .map(c => ({
+        data: c.data_pagamento || c.data_vencimento || c.data_lancamento,
+        entrada: c.valor,
+        saida: 0,
+      })),
+    ...condominio.faturas
+      .filter(f => f.status === 'PAGO' || f.status === 'PARCIAL')
+      .map(f => ({
+        data: f.data_pagamento || f.data_vencimento,
+        entrada: f.valor_pago || f.valor_total,
+        saida: 0,
+      })),
   ].sort((a, b) => a.data.getTime() - b.data.getTime());
 
   // Group by date

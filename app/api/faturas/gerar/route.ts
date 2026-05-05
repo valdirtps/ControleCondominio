@@ -86,17 +86,12 @@ export async function POST(request: Request) {
         pYear -= 1;
     }
     const prevMesAno = `${pYear}-${String(pMonth).padStart(2, '0')}`;
-    const startDate = new Date(Date.UTC(pYear, pMonth - 1, 1, 0, 0, 0));
-    const endDate = new Date(Date.UTC(pYear, pMonth, 0, 23, 59, 59));
 
     // Get expenses from previous month
     const despesasMesAnterior = await prisma.despesa.findMany({
       where: {
         condominioId,
-        data_pagamento: {
-          gte: startDate,
-          lte: endDate
-        }
+        referente: prevMesAno
       }
     });
 
