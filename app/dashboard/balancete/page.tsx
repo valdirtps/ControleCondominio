@@ -206,12 +206,13 @@ export default async function BalancetePage({ searchParams }: { searchParams: Pr
                 </thead>
                 <tbody>
                   {faturasPagas.map((f, i) => {
-                    const multa = (f.raw.multa || 0) + (f.raw.juros || 0);
+                    const raw = f.raw as any;
+                    const multa = (raw.multa || 0) + (raw.juros || 0);
                     return (
                       <tr key={i} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
                         <td className="py-1 px-2">{f.desc}</td>
-                        <td className="py-1 px-2 text-center text-gray-600">{format(f.raw.data_vencimento, 'dd/MM/yyyy')}</td>
-                        <td className="py-1 px-2 text-center">{f.raw.data_pagamento ? format(f.raw.data_pagamento, 'dd/MM/yyyy') : '-'}</td>
+                        <td className="py-1 px-2 text-center text-gray-600">{format(raw.data_vencimento, 'dd/MM/yyyy')}</td>
+                        <td className="py-1 px-2 text-center">{raw.data_pagamento ? format(raw.data_pagamento, 'dd/MM/yyyy') : '-'}</td>
                         <td className="py-1 px-2 text-right text-red-600">{multa > 0 ? currencyFormatter.format(multa) : '-'}</td>
                         <td className="py-1 px-2 text-right font-medium text-green-700">{currencyFormatter.format(f.entrada)}</td>
                       </tr>
@@ -234,13 +235,16 @@ export default async function BalancetePage({ searchParams }: { searchParams: Pr
                   </tr>
                 </thead>
                 <tbody>
-                  {creditosExtras.map((c, i) => (
-                    <tr key={i} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
-                      <td className="py-1 px-2">{c.desc}</td>
-                      <td className="py-1 px-2 text-center text-gray-600">{c.raw.data_pagamento ? format(c.raw.data_pagamento, 'dd/MM/yyyy') : '-'}</td>
-                      <td className="py-1 px-2 text-right font-medium text-green-700">{currencyFormatter.format(c.entrada)}</td>
-                    </tr>
-                  ))}
+                  {creditosExtras.map((c, i) => {
+                    const raw = c.raw as any;
+                    return (
+                      <tr key={i} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                        <td className="py-1 px-2">{c.desc}</td>
+                        <td className="py-1 px-2 text-center text-gray-600">{raw.data_pagamento ? format(raw.data_pagamento, 'dd/MM/yyyy') : '-'}</td>
+                        <td className="py-1 px-2 text-right font-medium text-green-700">{currencyFormatter.format(c.entrada)}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -293,14 +297,17 @@ export default async function BalancetePage({ searchParams }: { searchParams: Pr
                 </tr>
               </thead>
               <tbody>
-                {despesasDoMes.map((d, i) => (
-                  <tr key={i} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
-                    <td className="py-1 px-2">{d.desc}</td>
-                    <td className="py-1 px-2 text-gray-600">{d.raw.observacao || '-'}</td>
-                    <td className="py-1 px-2 text-center text-gray-600">{format(d.raw.data_pagamento, 'dd/MM/yyyy')}</td>
-                    <td className="py-1 px-2 text-right font-medium text-red-700">{currencyFormatter.format(d.saida)}</td>
-                  </tr>
-                ))}
+                {despesasDoMes.map((d, i) => {
+                  const raw = d.raw as any;
+                  return (
+                    <tr key={i} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                      <td className="py-1 px-2">{d.desc}</td>
+                      <td className="py-1 px-2 text-gray-600">{raw.observacao || '-'}</td>
+                      <td className="py-1 px-2 text-center text-gray-600">{format(raw.data_pagamento, 'dd/MM/yyyy')}</td>
+                      <td className="py-1 px-2 text-right font-medium text-red-700">{currencyFormatter.format(d.saida)}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           ) : (
