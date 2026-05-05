@@ -142,16 +142,17 @@ export function ProprietarioForm({ initialData }: { initialData?: any }) {
               <Label htmlFor="saldo">Saldo Devedor Inicial (R$)</Label>
               <Input
                 id="saldo"
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.saldo_devedor_inicial}
-                onChange={(e) =>
+                type="text"
+                value={formData.saldo_devedor_inicial.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                onChange={(e) => {
+                  let value = e.target.value.replace(/\D/g, '');
+                  if (value === '') value = '0';
+                  const numericValue = parseInt(value, 10) / 100;
                   setFormData({
                     ...formData,
-                    saldo_devedor_inicial: parseFloat(e.target.value) || 0,
-                  })
-                }
+                    saldo_devedor_inicial: numericValue,
+                  });
+                }}
               />
               <p className="text-xs text-muted-foreground">
                 Aplicado apenas na primeira fatura gerada para este imóvel.

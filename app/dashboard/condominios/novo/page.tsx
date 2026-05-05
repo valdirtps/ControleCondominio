@@ -131,7 +131,7 @@ export default function NovoCondominioPage() {
                 <Input 
                   id="saldo_inicial" 
                   type="text" 
-                  value={formData.saldo_inicial.toFixed(2).replace('.', ',')} 
+                  value={formData.saldo_inicial.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} 
                   onChange={e => {
                     let value = e.target.value.replace(/\D/g, '');
                     if (value === '') value = '0';
