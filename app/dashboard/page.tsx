@@ -69,21 +69,21 @@ export default async function DashboardPage() {
     ...condominio.despesas
       .filter(d => d.referente >= earliestParametro)
       .map(d => ({
-        data: d.data_pagamento,
+        data: getVencimentoForCycle(d.referente, d.data_pagamento),
         entrada: 0,
         saida: d.valor,
       })),
     ...condominio.creditosExtras
       .filter(c => (c.mes_ano || c.referente) >= earliestParametro)
       .map(c => ({
-        data: c.data_pagamento || c.data_vencimento || c.data_lancamento,
+        data: c.data_vencimento || getVencimentoForCycle(c.mes_ano || c.referente, c.data_pagamento || c.data_lancamento),
         entrada: c.valor,
         saida: 0,
       })),
     ...condominio.faturas
       .filter(f => f.status === 'PAGO' || f.status === 'PARCIAL')
       .map(f => ({
-        data: f.data_pagamento || f.data_vencimento,
+        data: f.data_vencimento,
         entrada: f.valor_pago || f.valor_total,
         saida: 0,
       })),
