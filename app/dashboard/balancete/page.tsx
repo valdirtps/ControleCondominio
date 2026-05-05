@@ -6,14 +6,14 @@ import { BalancetePrintButton } from './print-button';
 import Link from 'next/link';
 import { getActiveChamadasExtras } from '@/lib/chamadas-extras';
 
-export default async function BalancetePage({ searchParams }: { searchParams: { mes_ano: string } }) {
+export default async function BalancetePage({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const session = await getSession();
   if (!session || !session.user.condominioId) {
     redirect('/login');
   }
 
   const sp = await searchParams;
-  const mesAno = sp.mes_ano;
+  const mesAno = typeof sp.mes_ano === 'string' ? sp.mes_ano : undefined;
   
   if (!mesAno) {
     return <div>Mês/Ano não informado. <Link href="/dashboard" className="text-blue-600 underline">Voltar</Link></div>;
