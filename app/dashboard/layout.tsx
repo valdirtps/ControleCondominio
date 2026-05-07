@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { Home, Users, Settings, FileText, DollarSign, UserCheck } from 'lucide-react';
 import prisma from '@/lib/db';
 import { LogoutButton } from '@/components/logout-button';
+import { IdleTimeout } from '@/components/idle-timeout';
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const session = await getSession();
@@ -28,6 +29,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
   return (
     <div className="flex min-h-screen bg-background">
+      <IdleTimeout />
       {/* Sidebar */}
       <aside className="w-64 bg-slate-900 text-slate-50 border-r border-slate-800 shadow-sm hidden md:block">
         <div className="p-4 border-b border-slate-800">
