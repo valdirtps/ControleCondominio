@@ -8,9 +8,7 @@ import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { GerarFaturasDialog } from './gerar-faturas-dialog';
 import { SendEmailButton } from './send-email-button';
-import { SendWhatsappButton } from './send-whatsapp-button';
 import { SendBulkEmailsDialog } from './send-bulk-emails-dialog';
-import { SendBulkWhatsappDialog } from './send-bulk-whatsapp-dialog';
 import Link from 'next/link';
 
 export default async function FaturasPage() {
@@ -31,7 +29,6 @@ export default async function FaturasPage() {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">Faturas</h1>
         <div className="flex space-x-3">
-          <SendBulkWhatsappDialog meses={uniqueMesAno} />
           <SendBulkEmailsDialog meses={uniqueMesAno} />
           <GerarFaturasDialog />
         </div>
@@ -104,7 +101,6 @@ export default async function FaturasPage() {
                     <Button variant="outline" size="sm" render={<Link href={`/dashboard/faturas/${f.id}`} />}>
                       PDF
                     </Button>
-                    <SendWhatsappButton faturaId={f.id} telefone={f.proprietario.telefone} mesAno={f.mes_ano} valor={f.valor_total} nome={f.proprietario.nome} condominioNome={f.condominio.nome} />
                     <SendEmailButton faturaId={f.id} email={f.proprietario.email} />
                   </TableCell>
                 </TableRow>
