@@ -29,40 +29,40 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   return (
     <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
-      <aside className="w-64 bg-card border-r shadow-sm hidden md:block">
-        <div className="p-4 border-b">
-          <h1 className="text-xl font-bold text-foreground">Gestão Condomínio</h1>
-          <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{user.nome}</p>
+      <aside className="w-64 bg-slate-900 text-slate-50 border-r border-slate-800 shadow-sm hidden md:block">
+        <div className="p-4 border-b border-slate-800">
+          <h1 className="text-xl font-bold text-white">Gestão Condomínio</h1>
+          <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">{user.nome}</p>
           {condominioNome && (
-            <p className="text-sm text-red-600 font-bold mt-1">{condominioNome}</p>
+            <p className="text-sm text-red-500 font-bold mt-1">{condominioNome}</p>
           )}
         </div>
         <nav className="p-4 space-y-1">
-          <Link href="/dashboard" className="flex items-center gap-3 p-2.5 rounded-lg transition-colors hover:bg-muted text-foreground/80 hover:text-foreground font-medium">
+          <Link href="/dashboard" className="flex items-center gap-3 p-2.5 rounded-lg transition-colors hover:bg-slate-800 text-slate-300 hover:text-white font-medium">
             <Home size={18} /> Fluxo de Caixa
           </Link>
           
           {user.role === 'ADMIN_SISTEMA' && (
-            <Link href="/dashboard/condominios" className="flex items-center gap-3 p-2.5 rounded-lg transition-colors hover:bg-muted text-foreground/80 hover:text-foreground font-medium">
+            <Link href="/dashboard/condominios" className="flex items-center gap-3 p-2.5 rounded-lg transition-colors hover:bg-slate-800 text-slate-300 hover:text-white font-medium">
               <Users size={18} /> Condomínios
             </Link>
           )}
 
           {user.role !== 'USUARIO' && user.role !== 'ADMIN_SISTEMA' && (
             <>
-              <Link href="/dashboard/proprietarios" className="flex items-center gap-3 p-2.5 rounded-lg transition-colors hover:bg-muted text-foreground/80 hover:text-foreground font-medium">
+              <Link href="/dashboard/proprietarios" className="flex items-center gap-3 p-2.5 rounded-lg transition-colors hover:bg-slate-800 text-slate-300 hover:text-white font-medium">
                 <Users size={18} /> Proprietários
               </Link>
-              <Link href="/dashboard/sindico" className="flex items-center gap-3 p-2.5 rounded-lg transition-colors hover:bg-muted text-foreground/80 hover:text-foreground font-medium">
+              <Link href="/dashboard/sindico" className="flex items-center gap-3 p-2.5 rounded-lg transition-colors hover:bg-slate-800 text-slate-300 hover:text-white font-medium">
                 <UserCheck size={18} /> Síndico
               </Link>
-              <Link href="/dashboard/lancamentos" className="flex items-center gap-3 p-2.5 rounded-lg transition-colors hover:bg-muted text-foreground/80 hover:text-foreground font-medium">
+              <Link href="/dashboard/lancamentos" className="flex items-center gap-3 p-2.5 rounded-lg transition-colors hover:bg-slate-800 text-slate-300 hover:text-white font-medium">
                 <DollarSign size={18} /> Lançamentos
               </Link>
-              <Link href="/dashboard/faturas" className="flex items-center gap-3 p-2.5 rounded-lg transition-colors hover:bg-muted text-foreground/80 hover:text-foreground font-medium">
+              <Link href="/dashboard/faturas" className="flex items-center gap-3 p-2.5 rounded-lg transition-colors hover:bg-slate-800 text-slate-300 hover:text-white font-medium">
                 <FileText size={18} /> Faturas
               </Link>
-              <Link href="/dashboard/configuracoes" className="flex items-center gap-3 p-2.5 rounded-lg transition-colors hover:bg-muted text-foreground/80 hover:text-foreground font-medium">
+              <Link href="/dashboard/configuracoes" className="flex items-center gap-3 p-2.5 rounded-lg transition-colors hover:bg-slate-800 text-slate-300 hover:text-white font-medium">
                 <Settings size={18} /> Configurações
               </Link>
             </>
@@ -73,10 +73,10 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       {/* Main Content */}
       <main className="flex-1 flex flex-col">
         {/* Header */}
-        <header className="bg-card border-b p-4 flex justify-between items-center shadow-sm">
+        <header className="bg-slate-900 border-b border-slate-800 text-slate-50 p-4 flex justify-between items-center shadow-sm">
           <div className="md:hidden">
-            <div className="font-bold text-lg text-foreground">Gestão Condomínio</div>
-            {condominioNome && <div className="text-sm text-red-600 font-bold">{condominioNome}</div>}
+            <div className="font-bold text-lg text-white">Gestão Condomínio</div>
+            {condominioNome && <div className="text-sm text-red-500 font-bold">{condominioNome}</div>}
           </div>
           <div className="hidden md:block"></div>
           <LogoutButton />
