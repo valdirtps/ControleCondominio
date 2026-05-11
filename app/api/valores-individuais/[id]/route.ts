@@ -47,14 +47,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
-    const faturasCount = await prisma.fatura.count({
-      where: { condominioId: session.user.condominioId, mes_ano: valorInd.mes_ano }
-    });
-    
-    if (faturasCount > 0) {
-      return NextResponse.json({ error: 'Este mês já possui faturas geradas e está bloqueado para exclusão de lançamentos.' }, { status: 400 });
-    }
-
+    // Removed check for generated faturas. We allow deletion.
     await prisma.valoresIndividuais.delete({
       where: { id, condominioId: session.user.condominioId }
     });

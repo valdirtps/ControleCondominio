@@ -16,21 +16,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Check if trying to edit locked month
-    const existingParams = await prisma.parametros.findMany({
-      where: { condominioId: session.user.condominioId },
-      orderBy: { mes_ano: 'desc' }
-    });
+    // The check for already generated faturas was removed to allow late entries
+    // that can trigger a fatura recalculation later.
     
-    // Simplistic check, same as other places. A month is locked if Faturas are generated
-    const faturasCount = await prisma.fatura.count({
-      where: { condominioId: session.user.condominioId, mes_ano }
-    });
-    
-    if (faturasCount > 0) {
-      return NextResponse.json({ error: 'Este mês já possui faturas geradas e está bloqueado para novos lançamentos.' }, { status: 400 });
-    }
-
     const valorInd = await prisma.valoresIndividuais.create({
       data: {
         proprietarioId,

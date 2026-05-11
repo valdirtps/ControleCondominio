@@ -46,12 +46,8 @@ export default async function DashboardPage() {
       dataCalc = new Date(Date.UTC(y, m - 1, 15, 12, 0, 0));
     }
     
-    let nextMonth = dataCalc.getUTCMonth() + 1; 
+    let nextMonth = dataCalc.getUTCMonth(); 
     let nextYear = dataCalc.getUTCFullYear();
-    if (nextMonth > 11) {
-      nextMonth = 0;
-      nextYear++;
-    }
     
     const mesAnoStr = `${nextYear}-${String(nextMonth + 1).padStart(2, '0')}`;
     const param = condominio.parametros.find(p => p.mes_ano <= mesAnoStr) || condominio.parametros[0];

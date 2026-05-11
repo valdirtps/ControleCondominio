@@ -66,7 +66,7 @@ export function ValoresExclusivosTab({
 
       if (!res.ok) {
         const data = await res.json();
-        setErrorMsg(data.error || 'Erro ao salvar. Verifique se o mês já não possui faturas geradas.');
+        setErrorMsg(data.error || 'Erro ao salvar. Tente novamente.');
         return;
       }
 
@@ -120,7 +120,7 @@ export function ValoresExclusivosTab({
       });
       if (!res.ok) {
         const data = await res.json();
-        toast.error(data.error || 'Erro ao excluir. O mês pode já estar fechado / gerado.');
+        toast.error(data.error || 'Erro ao excluir.');
         return;
       }
       toast.success('Excluído com sucesso');
