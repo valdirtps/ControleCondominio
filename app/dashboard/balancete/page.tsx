@@ -70,9 +70,9 @@ export default async function BalancetePage({ searchParams }: { searchParams: Pr
       desc: c.referente,
       raw: c
     })),
-    ...condominio.faturas.filter(f => f.status === 'PAGO').map(f => ({
+    ...condominio.faturas.filter(f => f.status === 'PAGO' || f.status === 'PARCIAL').map(f => ({
       type: 'fatura',
-      data: f.data_pagamento || f.data_vencimento, // use data de pagamento as the transaction date if available
+      data: f.data_vencimento, // use data de vencimento to align with competência
       entrada: f.valor_pago || f.valor_total,
       saida: 0,
       desc: `Apto ${f.proprietario?.apartamento || ''}`,
