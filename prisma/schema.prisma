@@ -45,8 +45,24 @@ model Condominio {
   faturas            Fatura[]
   despesas           Despesa[]
   creditosExtras     CreditoExtra[]
+  agendasServico     AgendaServico[]
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
+}
+
+// ... other models ...
+
+model AgendaServico {
+  id                  String     @id @default(cuid())
+  titulo              String
+  descricao           String?
+  data_agendamento    DateTime
+  status              String     @default("AGENDADO") // AGENDADO, CONCLUIDO, CANCELADO
+  notificacao_enviada Boolean    @default(false)
+  condominioId        String
+  condominio          Condominio @relation(fields: [condominioId], references: [id])
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
 }
 
 model Proprietario {

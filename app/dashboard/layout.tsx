@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import Link from 'next/link';
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { Home, Users, Settings, FileText, DollarSign, UserCheck } from 'lucide-react';
+import { Home, Users, Settings, FileText, DollarSign, UserCheck, Calendar } from 'lucide-react';
 import prisma from '@/lib/db';
 import { LogoutButton } from '@/components/logout-button';
 import { IdleTimeout } from '@/components/idle-timeout';
@@ -63,6 +63,9 @@ export default async function DashboardLayout({ children }: { children: ReactNod
               </Link>
               <Link href="/dashboard/faturas" className="flex items-center gap-3 p-2.5 rounded-lg transition-colors hover:bg-slate-800 text-slate-300 hover:text-white font-medium">
                 <FileText size={18} /> Faturas
+              </Link>
+              <Link href="/dashboard/agendas" className="flex items-center gap-3 p-2.5 rounded-lg transition-colors hover:bg-slate-800 text-slate-300 hover:text-white font-medium">
+                <Calendar size={18} /> Agenda de Serviços
               </Link>
               <Link href="/dashboard/configuracoes" className="flex items-center gap-3 p-2.5 rounded-lg transition-colors hover:bg-slate-800 text-slate-300 hover:text-white font-medium">
                 <Settings size={18} /> Configurações
