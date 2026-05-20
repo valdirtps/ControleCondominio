@@ -71,13 +71,13 @@ export function LancamentosClient({
         </div>
       </div>
       
-      <Tabs defaultValue="valores-mensais">
-        <TabsList>
-          <TabsTrigger value="valores-mensais">Valores Mensais</TabsTrigger>
-          <TabsTrigger value="chamadas-extras">Chamadas Extras</TabsTrigger>
-          <TabsTrigger value="despesas">Despesas</TabsTrigger>
-          <TabsTrigger value="valores-exclusivos">Valores Exclusivos</TabsTrigger>
-          <TabsTrigger value="creditos-extras">Outros Créditos</TabsTrigger>
+      <Tabs defaultValue="valores-mensais" className="w-full">
+        <TabsList className="w-full flex justify-start overflow-x-auto whitespace-nowrap scrollbar-none pb-1 border-b rounded-none bg-transparent">
+          <TabsTrigger value="valores-mensais" className="flex-none px-4 py-2 border-b-2 data-active:border-primary rounded-none bg-transparent data-active:bg-transparent">Valores Mensais</TabsTrigger>
+          <TabsTrigger value="chamadas-extras" className="flex-none px-4 py-2 border-b-2 data-active:border-primary rounded-none bg-transparent data-active:bg-transparent">Chamadas Extras</TabsTrigger>
+          <TabsTrigger value="despesas" className="flex-none px-4 py-2 border-b-2 data-active:border-primary rounded-none bg-transparent data-active:bg-transparent">Despesas</TabsTrigger>
+          <TabsTrigger value="valores-exclusivos" className="flex-none px-4 py-2 border-b-2 data-active:border-primary rounded-none bg-transparent data-active:bg-transparent">Valores Exclusivos</TabsTrigger>
+          <TabsTrigger value="creditos-extras" className="flex-none px-4 py-2 border-b-2 data-active:border-primary rounded-none bg-transparent data-active:bg-transparent">Outros Créditos</TabsTrigger>
         </TabsList>
         <TabsContent value="valores-mensais">
           <ValoresMensaisTab 

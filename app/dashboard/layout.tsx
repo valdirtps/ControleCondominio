@@ -6,6 +6,7 @@ import { Home, Users, Settings, FileText, DollarSign, UserCheck, Calendar } from
 import prisma from '@/lib/db';
 import { LogoutButton } from '@/components/logout-button';
 import { IdleTimeout } from '@/components/idle-timeout';
+import { MobileMenu } from '@/components/mobile-menu';
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const session = await getSession();
@@ -79,16 +80,19 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       <main className="flex-1 flex flex-col">
         {/* Header */}
         <header className="bg-slate-900 border-b border-slate-800 text-slate-50 p-4 flex justify-between items-center shadow-sm">
-          <div className="md:hidden">
-            <div className="font-bold text-lg text-white">Gestão Condomínio</div>
-            {condominioNome && <div className="text-sm text-red-500 font-bold">{condominioNome}</div>}
+          <div className="flex items-center gap-4 md:hidden">
+            <MobileMenu user={user} condominioNome={condominioNome} />
+            <div>
+              <div className="font-bold text-base leading-tight text-white">Gestão Condomínio</div>
+              {condominioNome && <div className="text-xs text-red-500 font-bold leading-tight">{condominioNome}</div>}
+            </div>
           </div>
           <div className="hidden md:block"></div>
           <LogoutButton />
         </header>
 
         {/* Page Content */}
-        <div className="p-6 flex-1 overflow-auto">
+        <div className="p-4 md:p-6 flex-1 overflow-auto">
           {children}
         </div>
       </main>
