@@ -114,9 +114,9 @@ export async function POST(request: Request) {
       })
     };
 
-    // Get all owners
+    // Get all active owners
     const proprietarios = await prisma.proprietario.findMany({
-      where: { condominioId },
+      where: { condominioId, ativo: true },
     });
 
     if (proprietarios.length === 0) return NextResponse.json({ error: 'Nenhum proprietário cadastrado' }, { status: 400 });

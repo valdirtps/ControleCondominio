@@ -26,6 +26,7 @@ export function ProprietarioForm({ initialData }: { initialData?: any }) {
     telefone: initialData?.telefone || "",
     email: initialData?.email || "",
     saldo_devedor_inicial: initialData?.saldo_devedor_inicial || 0,
+    mudancaProprietario: false,
   });
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -158,6 +159,28 @@ export function ProprietarioForm({ initialData }: { initialData?: any }) {
                 Aplicado apenas na primeira fatura gerada para este imóvel.
               </p>
             </div>
+
+            {initialData && (
+              <div className="flex items-start space-x-3 rounded-lg border p-4 shadow-sm bg-muted/40">
+                <input
+                  id="mudancaProprietario"
+                  type="checkbox"
+                  checked={formData.mudancaProprietario}
+                  onChange={(e) =>
+                    setFormData({ ...formData, mudancaProprietario: e.target.checked })
+                  }
+                  className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                />
+                <div className="space-y-1">
+                  <Label htmlFor="mudancaProprietario" className="text-sm font-medium leading-none cursor-pointer">
+                    Mudança de Proprietário? (&quot;Transferência&quot;)
+                  </Label>
+                  <p className="text-xs text-muted-foreground leading-normal mt-1">
+                    Marque esta opção somente se este apartamento estiver trocando de morador. O proprietário antigo será congelado no histórico de faturas e um novo morador ativo será criado na lista de apartamentos.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
         <CardFooter className="flex justify-between gap-2">

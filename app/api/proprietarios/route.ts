@@ -17,6 +17,7 @@ export async function POST(request: Request) {
       where: {
         condominioId: session.user.condominioId,
         apartamento: data.apartamento,
+        ativo: true,
       },
     });
 

@@ -11,7 +11,7 @@ export default async function ProprietariosPage() {
   if (!session) return null;
 
   const proprietarios = await prisma.proprietario.findMany({
-    where: { condominioId: session.user.condominioId },
+    where: { condominioId: session.user.condominioId, ativo: true },
     orderBy: { apartamento: 'asc' },
   });
 

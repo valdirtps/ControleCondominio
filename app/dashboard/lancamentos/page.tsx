@@ -30,7 +30,7 @@ export default async function LancamentosPage() {
   });
 
   const proprietarios = await prisma.proprietario.findMany({
-    where: { condominioId: session.user.condominioId },
+    where: { condominioId: session.user.condominioId, ativo: true },
   });
 
   const rawValoresIndividuais = await prisma.valoresIndividuais.findMany({

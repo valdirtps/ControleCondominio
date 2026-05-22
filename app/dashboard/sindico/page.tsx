@@ -13,7 +13,7 @@ export default async function SindicoPage() {
   });
 
   const proprietarios = await prisma.proprietario.findMany({
-    where: { condominioId: session.user.condominioId },
+    where: { condominioId: session.user.condominioId, ativo: true },
     orderBy: { apartamento: 'asc' },
   });
 

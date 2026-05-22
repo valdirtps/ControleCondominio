@@ -72,6 +72,7 @@ model Proprietario {
   telefone              String?
   email                 String?
   saldo_devedor_inicial Float                @default(0)
+  ativo                 Boolean              @default(true)
   condominioId          String
   condominio            Condominio           @relation(fields: [condominioId], references: [id])
   sindicos              Sindico[]

@@ -26,26 +26,49 @@ export async function PUT(
         condominioId: session.user.condominioId,
         apartamento: data.apartamento,
         id: { not: id },
+        ativo: true,
       },
     });
 
     if (existingProprietario) {
       return NextResponse.json(
-        { error: "Já existe um proprietário para este apartamento" },
+        { error: "Já existe um proprietário ativo para este apartamento" },
         { status: 400 },
       );
     }
 
-    const proprietario = await prisma.proprietario.update({
-      where: { id, condominioId: session.user.condominioId },
-      data: {
-        nome: data.nome,
-        apartamento: data.apartamento,
-        telefone: data.telefone,
-        email: data.email,
-        saldo_devedor_inicial: data.saldo_devedor_inicial || 0,
-      },
-    });
+    let proprietario;
+    if (data.mudancaProprietario) {
+      // 1. Deactive the old record as is (freezing history)
+      await prisma.proprietario.update({
+        where: { id, condominioId: session.user.condominioId },
+        data: { ativo: false },
+      });
+
+      // 2. Create the new record with the new resident data for future bills
+      proprietario = await prisma.proprietario.create({
+        data: {
+          nome: data.nome,
+          apartamento: data.apartamento,
+          telefone: data.telefone,
+          email: data.email,
+          saldo_devedor_inicial: data.saldo_devedor_inicial || 0,
+          ativo: true,
+          condominioId: session.user.condominioId,
+        },
+      });
+    } else {
+      proprietario = await prisma.proprietario.update({
+        where: { id, condominioId: session.user.condominioId },
+        data: {
+          nome: data.nome,
+          apartamento: data.apartamento,
+          telefone: data.telefone,
+          email: data.email,
+          saldo_devedor_inicial: data.saldo_devedor_inicial || 0,
+        },
+      });
+    }
 
     return NextResponse.json(proprietario);
   } catch (error) {
