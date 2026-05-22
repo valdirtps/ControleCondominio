@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { SindicoSecurityDialog } from '@/components/sindico-security-dialog';
 import {
   Select,
   SelectContent,
@@ -39,6 +40,13 @@ export function DespesasTab({ initialData, defaultMesAno }: { initialData: any[]
   const [despesaToDelete, setDespesaToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
+
+  // Security checking states
+  const [securityOpen, setSecurityOpen] = useState(false);
+  const [creatorSindicoId, setCreatorSindicoId] = useState('');
+  const [creatorSindicoNome, setCreatorSindicoNome] = useState('');
+  const [creatorSindicoEmail, setCreatorSindicoEmail] = useState('');
+  const [pendingAction, setPendingAction] = useState<((code: string) => Promise<void>) | null>(null);
 
   const getPreviousMonth = (yyyyMM: string) => {
     if (!yyyyMM) return '';
@@ -78,22 +86,49 @@ export function DespesasTab({ initialData, defaultMesAno }: { initialData: any[]
       referente: despesa.referente,
       observacao: despesa.observacao || '',
       data_pagamento: despesa.data_pagamento ? new Date(despesa.data_pagamento).toISOString().split('T')[0] : '',
-    });
+      sindicoId: despesa.sindicoId || null,
+    } as any);
     setEditingId(despesa.id);
     setOpen(true);
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (verificationCode?: string) => {
     if (!despesaToDelete) return;
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/despesas/${despesaToDelete}`, {
+      const originalItem = initialData.find(d => d.id === despesaToDelete);
+      const parentSindicoId = originalItem?.sindicoId;
+      const finalCode = verificationCode || (parentSindicoId ? sessionStorage.getItem(`sindico_code_${parentSindicoId}`) : null);
+
+      const headers: Record<string, string> = {};
+      if (finalCode) {
+        headers['x-verification-code'] = finalCode;
+      }
+
+      const url = `/api/despesas/${despesaToDelete}` + (finalCode ? `?codigo_verificacao=${finalCode}` : '');
+      const res = await fetch(url, {
         method: 'DELETE',
+        headers
       });
 
       if (res.ok) {
         toast.success('Despesa excluída com sucesso!');
+        setDeleteDialogOpen(false);
+        setDespesaToDelete(null);
         router.refresh();
+      } else if (res.status === 403) {
+        const errorData = await res.json();
+        if (errorData.codeRequired) {
+          setCreatorSindicoId(errorData.creatorSindicoId);
+          setCreatorSindicoNome(errorData.creatorSindicoNome);
+          setCreatorSindicoEmail(errorData.creatorSindicoEmail);
+          setPendingAction(() => async (code: string) => {
+            await handleDelete(code);
+          });
+          setSecurityOpen(true);
+        } else {
+          toast.error(errorData.error || 'Erro de permissão');
+        }
       } else {
         const data = await res.json();
         toast.error(data.error || 'Erro ao excluir despesa');
@@ -102,8 +137,6 @@ export function DespesasTab({ initialData, defaultMesAno }: { initialData: any[]
       toast.error('Erro ao conectar ao servidor');
     } finally {
       setIsDeleting(false);
-      setDeleteDialogOpen(false);
-      setDespesaToDelete(null);
     }
   };
 
@@ -112,8 +145,8 @@ export function DespesasTab({ initialData, defaultMesAno }: { initialData: any[]
     setDeleteDialogOpen(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent, verificationCode?: string) => {
+    if (e) e.preventDefault();
 
     if (!formData.tipo) {
       toast.error('Selecione o tipo de despesa');
@@ -123,15 +156,24 @@ export function DespesasTab({ initialData, defaultMesAno }: { initialData: any[]
     setLoading(true);
 
     try {
+      const parentSindicoId = (formData as any).sindicoId;
+      const finalCode = verificationCode || (parentSindicoId ? sessionStorage.getItem(`sindico_code_${parentSindicoId}`) : null);
+
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (finalCode) {
+        headers['x-verification-code'] = finalCode;
+      }
+
       const url = editingId ? `/api/despesas/${editingId}` : '/api/despesas';
       const method = editingId ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           ...formData,
           data_pagamento: new Date(formData.data_pagamento).toISOString(),
+          codigo_verificacao: finalCode,
         }),
       });
 
@@ -139,6 +181,19 @@ export function DespesasTab({ initialData, defaultMesAno }: { initialData: any[]
         toast.success(editingId ? 'Despesa atualizada com sucesso!' : 'Despesa adicionada com sucesso!');
         setOpen(false);
         router.refresh();
+      } else if (res.status === 403) {
+        const errorData = await res.json();
+        if (errorData.codeRequired) {
+          setCreatorSindicoId(errorData.creatorSindicoId);
+          setCreatorSindicoNome(errorData.creatorSindicoNome);
+          setCreatorSindicoEmail(errorData.creatorSindicoEmail);
+          setPendingAction(() => async (code: string) => {
+            await handleSubmit(undefined, code);
+          });
+          setSecurityOpen(true);
+        } else {
+          toast.error(errorData.error || 'Erro de permissão');
+        }
       } else {
         const data = await res.json();
         toast.error(data.error || 'Erro ao salvar');
@@ -282,6 +337,19 @@ export function DespesasTab({ initialData, defaultMesAno }: { initialData: any[]
           </Table>
         </CardContent>
       </Card>
+
+      <SindicoSecurityDialog
+        open={securityOpen}
+        onOpenChange={setSecurityOpen}
+        creatorSindicoId={creatorSindicoId}
+        creatorSindicoNome={creatorSindicoNome}
+        creatorSindicoEmail={creatorSindicoEmail}
+        onSuccess={(code) => {
+          if (pendingAction) {
+            pendingAction(code);
+          }
+        }}
+      />
     </div>
   );
 }

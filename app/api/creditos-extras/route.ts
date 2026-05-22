@@ -11,6 +11,11 @@ export async function POST(req: Request) {
 
     const { valor, referente, mes_ano, data_lancamento } = await req.json();
 
+    // Find the current active property manager (síndico)
+    const activeSindico = await prisma.sindico.findFirst({
+      where: { condominioId: session.user.condominioId!, ativo: true },
+    });
+
     const credito = await prisma.creditoExtra.create({
       data: {
         valor,
@@ -18,6 +23,7 @@ export async function POST(req: Request) {
         mes_ano,
         data_lancamento: data_lancamento ? new Date(data_lancamento) : new Date(),
         condominioId: session.user.condominioId!,
+        sindicoId: activeSindico?.id || null,
       },
     });
 

@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { getActiveChamadasExtras } from '@/lib/chamadas-extras';
+import { SindicoSecurityDialog } from '@/components/sindico-security-dialog';
 
 export function ChamadasExtrasTab({ 
   defaultMesAno,
@@ -27,6 +28,13 @@ export function ChamadasExtrasTab({
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
+
+  // Security checking states
+  const [securityOpen, setSecurityOpen] = useState(false);
+  const [creatorSindicoId, setCreatorSindicoId] = useState('');
+  const [creatorSindicoNome, setCreatorSindicoNome] = useState('');
+  const [creatorSindicoEmail, setCreatorSindicoEmail] = useState('');
+  const [pendingAction, setPendingAction] = useState<((code: string) => Promise<void>) | null>(null);
 
   const defaultForm = {
     mes_ano: defaultMesAno,
@@ -65,19 +73,49 @@ export function ChamadasExtrasTab({
       valor_total: data.valor_total || (data.valor * (data.parcelas || 1)),
       parcelas: data.parcelas || 1,
       valor: data.valor,
-    });
+      sindicoId: data.sindicoId || null,
+    } as any);
     setEditingId(data.id);
     setOpen(true);
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (verificationCode?: string) => {
     if (!itemToDelete) return;
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/chamadas-extras/${itemToDelete}`, { method: 'DELETE' });
+      const originalItem = chamadasExtrasAll.find(c => c.id === itemToDelete);
+      const parentSindicoId = originalItem?.sindicoId;
+      const finalCode = verificationCode || (parentSindicoId ? sessionStorage.getItem(`sindico_code_${parentSindicoId}`) : null);
+
+      const headers: Record<string, string> = {};
+      if (finalCode) {
+        headers['x-verification-code'] = finalCode;
+      }
+
+      const url = `/api/chamadas-extras/${itemToDelete}` + (finalCode ? `?codigo_verificacao=${finalCode}` : '');
+      const res = await fetch(url, { 
+        method: 'DELETE',
+        headers
+      });
+
       if (res.ok) {
         toast.success('Chamada Extra excluída com sucesso!');
+        setDeleteDialogOpen(false);
+        setItemToDelete(null);
         router.refresh();
+      } else if (res.status === 403) {
+        const errorData = await res.json();
+        if (errorData.codeRequired) {
+          setCreatorSindicoId(errorData.creatorSindicoId);
+          setCreatorSindicoNome(errorData.creatorSindicoNome);
+          setCreatorSindicoEmail(errorData.creatorSindicoEmail);
+          setPendingAction(() => async (code: string) => {
+            await handleDelete(code);
+          });
+          setSecurityOpen(true);
+        } else {
+          toast.error(errorData.error || 'Erro de permissão');
+        }
       } else {
         const data = await res.json();
         toast.error(data.error || 'Erro ao excluir');
@@ -86,13 +124,11 @@ export function ChamadasExtrasTab({
       toast.error('Erro ao conectar ao servidor');
     } finally {
       setIsDeleting(false);
-      setDeleteDialogOpen(false);
-      setItemToDelete(null);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent, verificationCode?: string) => {
+    if (e) e.preventDefault();
     if (!formData.referente) {
       toast.error('Informe o campo referente');
       return;
@@ -104,18 +140,42 @@ export function ChamadasExtrasTab({
 
     setLoading(true);
     try {
+      const parentSindicoId = (formData as any).sindicoId;
+      const finalCode = verificationCode || (parentSindicoId ? sessionStorage.getItem(`sindico_code_${parentSindicoId}`) : null);
+
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (finalCode) {
+        headers['x-verification-code'] = finalCode;
+      }
+
       const url = editingId ? `/api/chamadas-extras/${editingId}` : '/api/chamadas-extras';
       const method = editingId ? 'PUT' : 'POST';
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        headers,
+        body: JSON.stringify({
+          ...formData,
+          codigo_verificacao: finalCode,
+        }),
       });
 
       if (res.ok) {
         toast.success(editingId ? 'Atualizado com sucesso!' : 'Lançado com sucesso!');
         setOpen(false);
         router.refresh();
+      } else if (res.status === 403) {
+        const errorData = await res.json();
+        if (errorData.codeRequired) {
+          setCreatorSindicoId(errorData.creatorSindicoId);
+          setCreatorSindicoNome(errorData.creatorSindicoNome);
+          setCreatorSindicoEmail(errorData.creatorSindicoEmail);
+          setPendingAction(() => async (code: string) => {
+            await handleSubmit(undefined, code);
+          });
+          setSecurityOpen(true);
+        } else {
+          toast.error(errorData.error || 'Erro de permissão');
+        }
       } else {
         const data = await res.json();
         toast.error(data.error || 'Erro ao salvar');
@@ -256,6 +316,19 @@ export function ChamadasExtrasTab({
           </Table>
         </CardContent>
       </Card>
+
+      <SindicoSecurityDialog
+        open={securityOpen}
+        onOpenChange={setSecurityOpen}
+        creatorSindicoId={creatorSindicoId}
+        creatorSindicoNome={creatorSindicoNome}
+        creatorSindicoEmail={creatorSindicoEmail}
+        onSuccess={(code) => {
+          if (pendingAction) {
+            pendingAction(code);
+          }
+        }}
+      />
     </div>
   );
 }

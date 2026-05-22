@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { getActiveChamadasExtras } from '@/lib/chamadas-extras';
+import { SindicoSecurityDialog } from '@/components/sindico-security-dialog';
 
 export function ValoresMensaisTab({ 
   initialData, 
@@ -44,6 +45,13 @@ export function ValoresMensaisTab({
   };
 
   const [formData, setFormData] = useState(defaultForm);
+
+  // Security checking states
+  const [securityOpen, setSecurityOpen] = useState(false);
+  const [creatorSindicoId, setCreatorSindicoId] = useState('');
+  const [creatorSindicoNome, setCreatorSindicoNome] = useState('');
+  const [creatorSindicoEmail, setCreatorSindicoEmail] = useState('');
+  const [pendingAction, setPendingAction] = useState<((code: string) => Promise<void>) | null>(null);
 
   // Calculate due date
   const getParametroForMesAno = (mesAno: string) => {
@@ -120,25 +128,50 @@ export function ValoresMensaisTab({
       fundo_reserva: data.fundo_reserva,
       taxa_condominio: data.taxa_condominio,
       observacao: data.observacao || '',
-    });
+      sindicoId: data.sindicoId || null,
+    } as any);
     setOpen(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent, verificationCode?: string) => {
+    if (e) e.preventDefault();
     setLoading(true);
 
     try {
+      const parentSindicoId = (formData as any).sindicoId;
+      const finalCode = verificationCode || (parentSindicoId ? sessionStorage.getItem(`sindico_code_${parentSindicoId}`) : null);
+
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (finalCode) {
+        headers['x-verification-code'] = finalCode;
+      }
+
       const res = await fetch('/api/valores-mensais', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        headers,
+        body: JSON.stringify({
+          ...formData,
+          codigo_verificacao: finalCode,
+        }),
       });
 
       if (res.ok) {
         toast.success('Valores mensais salvos com sucesso!');
         setOpen(false);
         router.refresh();
+      } else if (res.status === 403) {
+        const errorData = await res.json();
+        if (errorData.codeRequired) {
+          setCreatorSindicoId(errorData.creatorSindicoId);
+          setCreatorSindicoNome(errorData.creatorSindicoNome);
+          setCreatorSindicoEmail(errorData.creatorSindicoEmail);
+          setPendingAction(() => async (code: string) => {
+            await handleSubmit(undefined, code);
+          });
+          setSecurityOpen(true);
+        } else {
+          toast.error(errorData.error || 'Erro de permissão');
+        }
       } else {
         const data = await res.json();
         toast.error(data.error || 'Erro ao salvar');
@@ -324,6 +357,19 @@ export function ValoresMensaisTab({
           </Table>
         </CardContent>
       </Card>
+
+      <SindicoSecurityDialog
+        open={securityOpen}
+        onOpenChange={setSecurityOpen}
+        creatorSindicoId={creatorSindicoId}
+        creatorSindicoNome={creatorSindicoNome}
+        creatorSindicoEmail={creatorSindicoEmail}
+        onSuccess={(code) => {
+          if (pendingAction) {
+            pendingAction(code);
+          }
+        }}
+      />
     </div>
   );
 }

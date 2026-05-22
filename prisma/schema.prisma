@@ -92,8 +92,15 @@ model Sindico {
   paga_condominio    Boolean       @default(true)
   paga_chamada_extra Boolean       @default(true)
   ativo              Boolean       @default(true)
+  email_pessoal      String?
+  codigo_verificacao String?
   condominioId       String
   condominio         Condominio    @relation(fields: [condominioId], references: [id])
+  valoresMensais     ValoresMensais[]
+  chamadasExtras     ChamadaExtra[]
+  valoresIndividuais ValoresIndividuais[]
+  despesas           Despesa[]
+  creditosExtras     CreditoExtra[]
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
 }
@@ -123,6 +130,8 @@ model ValoresMensais {
   observacao      String?
   condominioId    String
   condominio      Condominio @relation(fields: [condominioId], references: [id])
+  sindicoId       String?
+  sindico         Sindico?   @relation(fields: [sindicoId], references: [id])
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 
@@ -139,6 +148,8 @@ model ChamadaExtra {
   isenta_sindico Boolean    @default(false)
   condominioId   String
   condominio     Condominio @relation(fields: [condominioId], references: [id])
+  sindicoId      String?
+  sindico        Sindico?   @relation(fields: [sindicoId], references: [id])
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
 }
@@ -152,6 +163,8 @@ model ValoresIndividuais {
   proprietario   Proprietario @relation(fields: [proprietarioId], references: [id])
   condominioId   String
   condominio     Condominio   @relation(fields: [condominioId], references: [id])
+  sindicoId      String?
+  sindico        Sindico?     @relation(fields: [sindicoId], references: [id])
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 }
@@ -188,6 +201,8 @@ model Despesa {
   data_lancamento DateTime   @default(now())
   condominioId    String
   condominio      Condominio @relation(fields: [condominioId], references: [id])
+  sindicoId       String?
+  sindico         Sindico?   @relation(fields: [sindicoId], references: [id])
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 }
@@ -202,6 +217,8 @@ model CreditoExtra {
   data_vencimento DateTime?
   condominioId    String
   condominio      Condominio @relation(fields: [condominioId], references: [id])
+  sindicoId       String?
+  sindico         Sindico?   @relation(fields: [sindicoId], references: [id])
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 }

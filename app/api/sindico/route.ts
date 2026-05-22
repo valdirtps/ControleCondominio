@@ -22,6 +22,7 @@ export async function POST(request: Request) {
       data: {
         proprietarioId: data.proprietarioId,
         empresa_nome: data.proprietarioId ? null : data.empresa_nome,
+        email_pessoal: data.email_pessoal,
         data_inicio: new Date(data.data_inicio),
         data_fim: data.data_fim ? new Date(data.data_fim) : null,
         paga_condominio: data.proprietarioId ? data.paga_condominio : true,

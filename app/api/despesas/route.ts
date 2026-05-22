@@ -13,6 +13,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Campos obrigatórios faltando' }, { status: 400 });
     }
 
+    // Find the current active property manager (síndico)
+    const activeSindico = await prisma.sindico.findFirst({
+      where: { condominioId: session.user.condominioId, ativo: true },
+    });
+
     const despesa = await prisma.despesa.create({
       data: {
         tipo: data.tipo,
@@ -21,6 +26,7 @@ export async function POST(request: Request) {
         observacao: data.observacao || null,
         data_pagamento: new Date(data.data_pagamento),
         condominioId: session.user.condominioId,
+        sindicoId: activeSindico?.id || null,
       },
     });
 

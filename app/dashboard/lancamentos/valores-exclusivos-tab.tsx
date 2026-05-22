@@ -14,6 +14,7 @@ import { Plus, Trash2, Pencil } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { DialogFooter } from '@/components/ui/dialog';
+import { SindicoSecurityDialog } from '@/components/sindico-security-dialog';
 
 export function ValoresExclusivosTab({ 
   initialData, 
@@ -33,6 +34,14 @@ export function ValoresExclusivosTab({
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Security checking states
+  const [securityOpen, setSecurityOpen] = useState(false);
+  const [creatorSindicoId, setCreatorSindicoId] = useState('');
+  const [creatorSindicoNome, setCreatorSindicoNome] = useState('');
+  const [creatorSindicoEmail, setCreatorSindicoEmail] = useState('');
+  const [pendingAction, setPendingAction] = useState<((code: string) => Promise<void>) | null>(null);
+
   const [formData, setFormData] = useState({
     proprietarioId: '',
     tipo: 'debito',
@@ -40,13 +49,21 @@ export function ValoresExclusivosTab({
     descricao: ''
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent, verificationCode?: string) => {
+    if (e) e.preventDefault();
     if (!formData.proprietarioId || !formData.valor || !formData.descricao) return;
     
     setErrorMsg('');
     setIsSubmitting(true);
     try {
+      const parentSindicoId = (formData as any).sindicoId;
+      const finalCode = verificationCode || (parentSindicoId ? sessionStorage.getItem(`sindico_code_${parentSindicoId}`) : null);
+
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (finalCode) {
+        headers['x-verification-code'] = finalCode;
+      }
+
       const url = editId ? `/api/valores-individuais/${editId}` : '/api/valores-individuais';
       const method = editId ? 'PUT' : 'POST';
 
@@ -55,31 +72,44 @@ export function ValoresExclusivosTab({
 
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           mes_ano: defaultMesAno,
           proprietarioId: formData.proprietarioId,
           valor: finalValor.toString(),
-          descricao: formData.descricao
+          descricao: formData.descricao,
+          codigo_verificacao: finalCode,
         })
       });
 
-      if (!res.ok) {
+      if (res.ok) {
+        setFormData({
+          proprietarioId: '',
+          tipo: 'debito',
+          valor: '',
+          descricao: ''
+        });
+        setEditId(null);
+        setIsOpen(false);
+        router.refresh();
+        toast.success(editId ? 'Atualizado com sucesso!' : 'Lançado com sucesso!');
+      } else if (res.status === 403) {
+        const errorData = await res.json();
+        if (errorData.codeRequired) {
+          setCreatorSindicoId(errorData.creatorSindicoId);
+          setCreatorSindicoNome(errorData.creatorSindicoNome);
+          setCreatorSindicoEmail(errorData.creatorSindicoEmail);
+          setPendingAction(() => async (code: string) => {
+            await handleSubmit(undefined, code);
+          });
+          setSecurityOpen(true);
+        } else {
+          setErrorMsg(errorData.error || 'Erro de permissão');
+        }
+      } else {
         const data = await res.json();
         setErrorMsg(data.error || 'Erro ao salvar. Tente novamente.');
-        return;
       }
-
-      setFormData({
-        proprietarioId: '',
-        tipo: 'debito',
-        valor: '',
-        descricao: ''
-      });
-      setEditId(null);
-      setIsOpen(false);
-      router.refresh();
-      toast.success(editId ? 'Atualizado com sucesso!' : 'Lançado com sucesso!');
     } catch (error) {
       console.error(error);
       setErrorMsg('Erro inesperado ao salvar.');
@@ -94,8 +124,9 @@ export function ValoresExclusivosTab({
       proprietarioId: v.proprietarioId,
       tipo: v.valor < 0 ? 'credito' : 'debito',
       valor: Math.abs(v.valor).toString(),
-      descricao: v.descricao
-    });
+      descricao: v.descricao,
+      sindicoId: v.sindicoId || null,
+    } as any);
     setIsOpen(true);
   };
 
@@ -110,22 +141,47 @@ export function ValoresExclusivosTab({
     setIsOpen(true);
   };
 
-  const confirmDelete = async () => {
+  const confirmDelete = async (verificationCode?: string) => {
     if (!deleteId) return;
     setIsDeleting(true);
     
     try {
-      const res = await fetch(`/api/valores-individuais/${deleteId}`, {
-        method: 'DELETE'
+      const originalItem = initialData.find(v => v.id === deleteId);
+      const parentSindicoId = originalItem?.sindicoId;
+      const finalCode = verificationCode || (parentSindicoId ? sessionStorage.getItem(`sindico_code_${parentSindicoId}`) : null);
+
+      const headers: Record<string, string> = {};
+      if (finalCode) {
+        headers['x-verification-code'] = finalCode;
+      }
+
+      const url = `/api/valores-individuais/${deleteId}` + (finalCode ? `?codigo_verificacao=${finalCode}` : '');
+      const res = await fetch(url, {
+        method: 'DELETE',
+        headers
       });
-      if (!res.ok) {
+
+      if (res.ok) {
+        toast.success('Excluído com sucesso');
+        setDeleteId(null);
+        router.refresh();
+      } else if (res.status === 403) {
+        const errorData = await res.json();
+        if (errorData.codeRequired) {
+          setCreatorSindicoId(errorData.creatorSindicoId);
+          setCreatorSindicoNome(errorData.creatorSindicoNome);
+          setCreatorSindicoEmail(errorData.creatorSindicoEmail);
+          setPendingAction(() => async (code: string) => {
+            await confirmDelete(code);
+          });
+          setSecurityOpen(true);
+        } else {
+          toast.error(errorData.error || 'Erro de permissão');
+        }
+      } else {
         const data = await res.json();
         toast.error(data.error || 'Erro ao excluir.');
-        return;
       }
-      toast.success('Excluído com sucesso');
-      setDeleteId(null);
-      router.refresh();
     } catch (error) {
       console.error(error);
       toast.error('Erro inesperado ao excluir.');
@@ -318,6 +374,19 @@ export function ValoresExclusivosTab({
           </Table>
         </CardContent>
       </Card>
+
+      <SindicoSecurityDialog
+        open={securityOpen}
+        onOpenChange={setSecurityOpen}
+        creatorSindicoId={creatorSindicoId}
+        creatorSindicoNome={creatorSindicoNome}
+        creatorSindicoEmail={creatorSindicoEmail}
+        onSuccess={(code) => {
+          if (pendingAction) {
+            pendingAction(code);
+          }
+        }}
+      />
     </div>
   );
 }

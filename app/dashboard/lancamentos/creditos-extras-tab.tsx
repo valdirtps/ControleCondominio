@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { SindicoSecurityDialog } from '@/components/sindico-security-dialog';
 
 export function CreditosExtrasTab({ initialData, defaultMesAno }: { initialData: any[], defaultMesAno: string }) {
   const [open, setOpen] = useState(false);
@@ -20,6 +21,13 @@ export function CreditosExtrasTab({ initialData, defaultMesAno }: { initialData:
   const [creditToDelete, setCreditToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
+
+  // Security checking states
+  const [securityOpen, setSecurityOpen] = useState(false);
+  const [creatorSindicoId, setCreatorSindicoId] = useState('');
+  const [creatorSindicoNome, setCreatorSindicoNome] = useState('');
+  const [creatorSindicoEmail, setCreatorSindicoEmail] = useState('');
+  const [pendingAction, setPendingAction] = useState<((code: string) => Promise<void>) | null>(null);
 
   const defaultForm = {
     valor: 0,
@@ -42,22 +50,49 @@ export function CreditosExtrasTab({ initialData, defaultMesAno }: { initialData:
       referente: credit.referente,
       mes_ano: credit.mes_ano || defaultMesAno,
       data_lancamento: credit.data_lancamento ? new Date(credit.data_lancamento).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-    });
+      sindicoId: credit.sindicoId || null,
+    } as any);
     setEditingId(credit.id);
     setOpen(true);
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (verificationCode?: string) => {
     if (!creditToDelete) return;
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/creditos-extras/${creditToDelete}`, {
+      const originalItem = initialData.find(c => c.id === creditToDelete);
+      const parentSindicoId = originalItem?.sindicoId;
+      const finalCode = verificationCode || (parentSindicoId ? sessionStorage.getItem(`sindico_code_${parentSindicoId}`) : null);
+
+      const headers: Record<string, string> = {};
+      if (finalCode) {
+        headers['x-verification-code'] = finalCode;
+      }
+
+      const url = `/api/creditos-extras/${creditToDelete}` + (finalCode ? `?codigo_verificacao=${finalCode}` : '');
+      const res = await fetch(url, {
         method: 'DELETE',
+        headers
       });
 
       if (res.ok) {
         toast.success('Crédito excluído com sucesso!');
+        setDeleteDialogOpen(false);
+        setCreditToDelete(null);
         router.refresh();
+      } else if (res.status === 403) {
+        const errorData = await res.json();
+        if (errorData.codeRequired) {
+          setCreatorSindicoId(errorData.creatorSindicoId);
+          setCreatorSindicoNome(errorData.creatorSindicoNome);
+          setCreatorSindicoEmail(errorData.creatorSindicoEmail);
+          setPendingAction(() => async (code: string) => {
+            await handleDelete(code);
+          });
+          setSecurityOpen(true);
+        } else {
+          toast.error(errorData.error || 'Erro de permissão');
+        }
       } else {
         const data = await res.json();
         toast.error(data.error || 'Erro ao excluir crédito');
@@ -66,8 +101,6 @@ export function CreditosExtrasTab({ initialData, defaultMesAno }: { initialData:
       toast.error('Erro ao conectar ao servidor');
     } finally {
       setIsDeleting(false);
-      setDeleteDialogOpen(false);
-      setCreditToDelete(null);
     }
   };
 
@@ -76,8 +109,8 @@ export function CreditosExtrasTab({ initialData, defaultMesAno }: { initialData:
     setDeleteDialogOpen(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent, verificationCode?: string) => {
+    if (e) e.preventDefault();
 
     if (!formData.referente) {
       toast.error('Informe o campo texto referente');
@@ -91,15 +124,24 @@ export function CreditosExtrasTab({ initialData, defaultMesAno }: { initialData:
     setLoading(true);
 
     try {
+      const parentSindicoId = (formData as any).sindicoId;
+      const finalCode = verificationCode || (parentSindicoId ? sessionStorage.getItem(`sindico_code_${parentSindicoId}`) : null);
+
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (finalCode) {
+        headers['x-verification-code'] = finalCode;
+      }
+
       const url = editingId ? `/api/creditos-extras/${editingId}` : '/api/creditos-extras';
       const method = editingId ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           ...formData,
           data_lancamento: new Date(formData.data_lancamento).toISOString(),
+          codigo_verificacao: finalCode,
         }),
       });
 
@@ -107,6 +149,19 @@ export function CreditosExtrasTab({ initialData, defaultMesAno }: { initialData:
         toast.success(editingId ? 'Crédito atualizado com sucesso!' : 'Crédito adicionado com sucesso!');
         setOpen(false);
         router.refresh();
+      } else if (res.status === 403) {
+        const errorData = await res.json();
+        if (errorData.codeRequired) {
+          setCreatorSindicoId(errorData.creatorSindicoId);
+          setCreatorSindicoNome(errorData.creatorSindicoNome);
+          setCreatorSindicoEmail(errorData.creatorSindicoEmail);
+          setPendingAction(() => async (code: string) => {
+            await handleSubmit(undefined, code);
+          });
+          setSecurityOpen(true);
+        } else {
+          toast.error(errorData.error || 'Erro de permissão');
+        }
       } else {
         const data = await res.json();
         toast.error(data.error || 'Erro ao salvar');
@@ -240,6 +295,19 @@ export function CreditosExtrasTab({ initialData, defaultMesAno }: { initialData:
           </Table>
         </CardContent>
       </Card>
+
+      <SindicoSecurityDialog
+        open={securityOpen}
+        onOpenChange={setSecurityOpen}
+        creatorSindicoId={creatorSindicoId}
+        creatorSindicoNome={creatorSindicoNome}
+        creatorSindicoEmail={creatorSindicoEmail}
+        onSuccess={(code) => {
+          if (pendingAction) {
+            pendingAction(code);
+          }
+        }}
+      />
     </div>
   );
 }

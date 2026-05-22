@@ -16,8 +16,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // The check for already generated faturas was removed to allow late entries
-    // that can trigger a fatura recalculation later.
+    // Find the current active property manager (síndico)
+    const activeSindico = await prisma.sindico.findFirst({
+      where: { condominioId: session.user.condominioId, ativo: true },
+    });
     
     const valorInd = await prisma.valoresIndividuais.create({
       data: {
@@ -26,6 +28,7 @@ export async function POST(req: Request) {
         valor: Number(valor),
         descricao,
         condominioId: session.user.condominioId,
+        sindicoId: activeSindico?.id || null,
       }
     });
 

@@ -13,6 +13,40 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Mês/Ano é obrigatório' }, { status: 400 });
     }
 
+    // 1. Find the current active property manager (síndico)
+    const activeSindico = await prisma.sindico.findFirst({
+      where: { condominioId: session.user.condominioId, ativo: true },
+    });
+
+    // 2. Check if a record already exists
+    const existing = await prisma.valoresMensais.findUnique({
+      where: {
+        mes_ano_condominioId: {
+          mes_ano: data.mes_ano,
+          condominioId: session.user.condominioId,
+        }
+      }
+    });
+
+    // 3. If there is an existing record created by a DIFFERENT manager, check the verification code
+    if (existing && existing.sindicoId && activeSindico && existing.sindicoId !== activeSindico.id) {
+      const providedCode = request.headers.get("x-verification-code") || data.codigo_verificacao;
+      const creatorSindico = await prisma.sindico.findUnique({
+        where: { id: existing.sindicoId },
+        include: { proprietario: true }
+      });
+
+      if (!creatorSindico || !creatorSindico.codigo_verificacao || creatorSindico.codigo_verificacao !== providedCode) {
+        return NextResponse.json({
+          error: "Código de verificação incorreto ou não fornecido",
+          codeRequired: true,
+          creatorSindicoId: existing.sindicoId,
+          creatorSindicoEmail: creatorSindico?.email_pessoal || creatorSindico?.proprietario?.email || "sindico@exemplo.com",
+          creatorSindicoNome: creatorSindico ? (creatorSindico.empresa_nome || creatorSindico.proprietario?.nome || "Síndico Anterior") : "Síndico Anterior"
+        }, { status: 403 });
+      }
+    }
+
     const valores = await prisma.valoresMensais.upsert({
       where: {
         mes_ano_condominioId: {
@@ -26,6 +60,7 @@ export async function POST(request: Request) {
         fundo_reserva: data.fundo_reserva,
         taxa_condominio: data.taxa_condominio,
         observacao: data.observacao,
+        sindicoId: activeSindico?.id || undefined, // associated to whoever updated it now
       },
       create: {
         mes_ano: data.mes_ano,
@@ -35,6 +70,7 @@ export async function POST(request: Request) {
         taxa_condominio: data.taxa_condominio,
         observacao: data.observacao,
         condominioId: session.user.condominioId,
+        sindicoId: activeSindico?.id || null,
       },
     });
 

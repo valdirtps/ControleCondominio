@@ -31,6 +31,28 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
+    const activeSindico = await prisma.sindico.findFirst({
+      where: { condominioId: session.user.condominioId!, ativo: true }
+    });
+
+    if (existingDespesa.sindicoId && activeSindico && existingDespesa.sindicoId !== activeSindico.id) {
+      const providedCode = request.headers.get("x-verification-code") || data.codigo_verificacao;
+      const creatorSindico = await prisma.sindico.findUnique({
+        where: { id: existingDespesa.sindicoId },
+        include: { proprietario: true }
+      });
+
+      if (!creatorSindico || !creatorSindico.codigo_verificacao || creatorSindico.codigo_verificacao !== providedCode) {
+        return NextResponse.json({
+          error: "Código de verificação incorreto ou não fornecido",
+          codeRequired: true,
+          creatorSindicoId: existingDespesa.sindicoId,
+          creatorSindicoEmail: creatorSindico?.email_pessoal || creatorSindico?.proprietario?.email || "sindico@exemplo.com",
+          creatorSindicoNome: creatorSindico ? (creatorSindico.empresa_nome || creatorSindico.proprietario?.nome || "Síndico Anterior") : "Síndico Anterior"
+        }, { status: 403 });
+      }
+    }
+
     const despesa = await prisma.despesa.update({
       where: { id },
       data: {
@@ -39,6 +61,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         referente,
         observacao: observacao || null,
         data_pagamento: new Date(data_pagamento),
+        sindicoId: activeSindico?.id || undefined,
       },
     });
 
@@ -70,6 +93,29 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 
     if (session.user.role !== 'ADMIN_SISTEMA' && existingDespesa.condominioId !== session.user.condominioId) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
+
+    const activeSindico = await prisma.sindico.findFirst({
+      where: { condominioId: session.user.condominioId!, ativo: true }
+    });
+
+    if (existingDespesa.sindicoId && activeSindico && existingDespesa.sindicoId !== activeSindico.id) {
+      const urlObj = new URL(request.url);
+      const providedCode = request.headers.get("x-verification-code") || urlObj.searchParams.get("codigo_verificacao");
+      const creatorSindico = await prisma.sindico.findUnique({
+        where: { id: existingDespesa.sindicoId },
+        include: { proprietario: true }
+      });
+
+      if (!creatorSindico || !creatorSindico.codigo_verificacao || creatorSindico.codigo_verificacao !== providedCode) {
+        return NextResponse.json({
+          error: "Código de verificação incorreto ou não fornecido",
+          codeRequired: true,
+          creatorSindicoId: existingDespesa.sindicoId,
+          creatorSindicoEmail: creatorSindico?.email_pessoal || creatorSindico?.proprietario?.email || "sindico@exemplo.com",
+          creatorSindicoNome: creatorSindico ? (creatorSindico.empresa_nome || creatorSindico.proprietario?.nome || "Síndico Anterior") : "Síndico Anterior"
+        }, { status: 403 });
+      }
     }
 
     await prisma.despesa.delete({

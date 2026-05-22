@@ -14,6 +14,7 @@ export function SindicoFormDialog({ open, onOpenChange, sindico, proprietarios }
   const [formData, setFormData] = useState<{
     proprietarioId: string;
     empresa_nome: string;
+    email_pessoal: string;
     data_inicio: string;
     data_fim: string;
     paga_condominio: boolean;
@@ -22,6 +23,7 @@ export function SindicoFormDialog({ open, onOpenChange, sindico, proprietarios }
   }>({
     proprietarioId: 'none',
     empresa_nome: '',
+    email_pessoal: '',
     data_inicio: format(new Date(), 'yyyy-MM-dd'),
     data_fim: '',
     paga_condominio: true,
@@ -36,6 +38,7 @@ export function SindicoFormDialog({ open, onOpenChange, sindico, proprietarios }
       setFormData({
         proprietarioId: sindico.proprietarioId || 'none',
         empresa_nome: sindico.empresa_nome || '',
+        email_pessoal: sindico.email_pessoal || '',
         data_inicio: sindico.data_inicio ? format(new Date(sindico.data_inicio), 'yyyy-MM-dd') : '',
         data_fim: sindico.data_fim ? format(new Date(sindico.data_fim), 'yyyy-MM-dd') : '',
         paga_condominio: sindico.paga_condominio ?? true,
@@ -46,6 +49,7 @@ export function SindicoFormDialog({ open, onOpenChange, sindico, proprietarios }
       setFormData({
         proprietarioId: 'none',
         empresa_nome: '',
+        email_pessoal: '',
         data_inicio: format(new Date(), 'yyyy-MM-dd'),
         data_fim: '',
         paga_condominio: true,
@@ -123,6 +127,18 @@ export function SindicoFormDialog({ open, onOpenChange, sindico, proprietarios }
               />
             </div>
           )}
+
+          <div className="space-y-2">
+            <Label htmlFor="email_pessoal">E-mail Pessoal (para recebimento de códigos de segurança)</Label>
+            <Input
+              id="email_pessoal"
+              type="email"
+              placeholder="sindico@exemplo.com"
+              value={formData.email_pessoal}
+              onChange={(e) => setFormData({ ...formData, email_pessoal: e.target.value })}
+              required
+            />
+          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
