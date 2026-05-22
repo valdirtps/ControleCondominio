@@ -1,5 +1,6 @@
 {
   "name": "ADM CONDOMINIOS",
   "description": "SISTEMA WEB DE GESTÃO DE CONDOMÍNIOS (COMPLETO)",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
