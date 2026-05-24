@@ -26,6 +26,23 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     if (condominio) {
       condominioNome = condominio.nome;
     }
+
+    // Auto-inactivate expired sindicos based on UTC date of data_fim
+    // data_fim is usually stored at T00:00:00.000Z
+    // If today's local date is greater than data_fim's date, we inactivate it.
+    const now = new Date();
+    // Usa uma data local para montar o boundary em UTC.
+    // Ex: hoje = 06/05/2026. A variável "todayMidnightUTC" será 2026-05-06T00:00:00.000Z.
+    const todayMidnightUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+    
+    await prisma.sindico.updateMany({
+      where: {
+        condominioId: user.condominioId,
+        ativo: true,
+        data_fim: { lt: todayMidnightUTC }
+      },
+      data: { ativo: false }
+    });
   }
 
   return (

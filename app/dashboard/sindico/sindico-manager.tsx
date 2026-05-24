@@ -13,7 +13,23 @@ export function SindicoManager({ sindicos, proprietarios }: { sindicos: any[], p
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingSindico, setEditingSindico] = useState<any>(null);
 
-  const activeSindico = sindicos.find(s => s.ativo);
+  const checkIsVigente = (sindico: any) => {
+    if (!sindico.ativo) return false;
+    if (!sindico.data_fim) return true;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const dataFim = new Date(sindico.data_fim);
+    // Assumindo que a data vem do banco. Convertendo para meia-noite local, cobrindo o dia
+    const userTimezoneOffset = dataFim.getTimezoneOffset() * 60000;
+    const finalDate = new Date(dataFim.getTime() + userTimezoneOffset);
+    finalDate.setHours(23, 59, 59, 999);
+    
+    return finalDate >= today;
+  };
+
+  const activeSindico = sindicos.find(checkIsVigente);
 
   const handleEdit = (sindico: any) => {
     setEditingSindico(sindico);
@@ -100,10 +116,10 @@ export function SindicoManager({ sindicos, proprietarios }: { sindicos: any[], p
                   <TableCell>{s.data_fim ? format(new Date(s.data_fim), 'dd/MM/yyyy') : '-'}</TableCell>
                   <TableCell>{format(new Date(s.createdAt), 'dd/MM/yyyy')}</TableCell>
                   <TableCell>
-                    {s.ativo ? (
+                    {checkIsVigente(s) ? (
                       <Badge className="bg-green-500">Vigente</Badge>
                     ) : (
-                      <Badge variant="secondary">Inativo</Badge>
+                      <Badge variant="secondary">{s.ativo && s.data_fim ? 'Vencido' : 'Inativo'}</Badge>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
