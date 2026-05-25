@@ -8,27 +8,27 @@ export function IdleTimeout() {
   const pathname = usePathname();
   const timeoutId = useRef<NodeJS.Timeout | null>(null);
 
-  const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-      router.push('/login');
-      router.refresh();
-    } catch (error) {
-      console.error('Logout failed', error);
-    }
-  };
-
-  const resetTimer = () => {
-    if (timeoutId.current) {
-      clearTimeout(timeoutId.current);
-    }
-    // 5 minutos = 5 * 60 * 1000 ms = 300000 ms
-    timeoutId.current = setTimeout(handleLogout, 300000);
-  };
-
   useEffect(() => {
     // Não aplicar timeout se não estiver em rotas autenticadas
     if (pathname === '/login' || pathname === '/') return;
+
+    const handleLogout = async () => {
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        router.push('/login');
+        router.refresh();
+      } catch (error) {
+        console.error('Logout failed', error);
+      }
+    };
+
+    const resetTimer = () => {
+      if (timeoutId.current) {
+        clearTimeout(timeoutId.current);
+      }
+      // 5 minutos = 5 * 60 * 1000 ms = 300000 ms
+      timeoutId.current = setTimeout(handleLogout, 300000);
+    };
 
     const events = ['mousemove', 'keydown', 'wheel', 'mousedown', 'touchstart', 'touchmove'];
 
@@ -51,7 +51,7 @@ export function IdleTimeout() {
         window.removeEventListener(event, handleEvent);
       });
     };
-  }, [pathname]);
+  }, [pathname, router]);
 
   return null;
 }
