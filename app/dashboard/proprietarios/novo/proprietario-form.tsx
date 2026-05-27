@@ -208,7 +208,7 @@ export function ProprietarioForm({ initialData }: { initialData?: any }) {
                     </DialogClose>
                     <Button
                       variant="destructive"
-                      onClick={handleDelete}
+                      onClick={() => handleDelete()}
                       disabled={deleteLoading}
                     >
                       {deleteLoading ? "Excluindo..." : "Confirmar Exclusão"}

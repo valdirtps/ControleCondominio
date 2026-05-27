@@ -242,7 +242,7 @@ export function ConfiguracoesForm({ initialData }: { initialData: any[] }) {
             <Button variant="outline" onClick={() => setDeleteId(null)} disabled={isDeleting}>
               Cancelar
             </Button>
-            <Button variant="destructive" onClick={confirmDelete} disabled={isDeleting}>
+            <Button variant="destructive" onClick={() => confirmDelete()} disabled={isDeleting}>
               {isDeleting ? 'Excluindo...' : 'Sim, Excluir'}
             </Button>
           </div>

@@ -144,7 +144,7 @@ export function EditCondominioForm({ condominio }: { condominio: any }) {
               <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={isDeleting}>
                 Cancelar
               </Button>
-              <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+              <Button variant="destructive" onClick={() => handleDelete()} disabled={isDeleting}>
                 {isDeleting ? 'Excluindo...' : 'Sim, excluir'}
               </Button>
             </DialogFooter>
