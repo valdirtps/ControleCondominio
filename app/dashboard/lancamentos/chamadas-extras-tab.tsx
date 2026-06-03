@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { safeSessionStorageGet } from '@/lib/storage';
 import { getActiveChamadasExtras } from '@/lib/chamadas-extras';
 import { SindicoSecurityDialog } from '@/components/sindico-security-dialog';
 
@@ -85,7 +86,7 @@ export function ChamadasExtrasTab({
     try {
       const originalItem = chamadasExtrasAll.find(c => c.id === itemToDelete);
       const parentSindicoId = originalItem?.sindicoId;
-      const finalCode = verificationCode || (parentSindicoId ? sessionStorage.getItem(`sindico_code_${parentSindicoId}`) : null);
+      const finalCode = verificationCode || (parentSindicoId ? safeSessionStorageGet(`sindico_code_${parentSindicoId}`) : null);
 
       const headers: Record<string, string> = {};
       if (finalCode) {
@@ -118,10 +119,10 @@ export function ChamadasExtrasTab({
         }
       } else {
         const data = await res.json();
-        toast.error(data.error || 'Erro ao excluir');
+        toast.error(data.details ? `${data.error}: ${data.details}` : (data.error || 'Erro ao excluir'));
       }
-    } catch (err) {
-      toast.error('Erro ao conectar ao servidor');
+    } catch (err: any) {
+      toast.error('Erro ao conectar ao servidor: ' + (err.message || String(err)));
     } finally {
       setIsDeleting(false);
     }
@@ -141,7 +142,7 @@ export function ChamadasExtrasTab({
     setLoading(true);
     try {
       const parentSindicoId = (formData as any).sindicoId;
-      const finalCode = verificationCode || (parentSindicoId ? sessionStorage.getItem(`sindico_code_${parentSindicoId}`) : null);
+      const finalCode = verificationCode || (parentSindicoId ? safeSessionStorageGet(`sindico_code_${parentSindicoId}`) : null);
 
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (finalCode) {
@@ -178,10 +179,10 @@ export function ChamadasExtrasTab({
         }
       } else {
         const data = await res.json();
-        toast.error(data.error || 'Erro ao salvar');
+        toast.error(data.details ? `${data.error}: ${data.details}` : (data.error || 'Erro ao salvar'));
       }
-    } catch (err) {
-      toast.error('Erro ao conectar ao servidor');
+    } catch (err: any) {
+      toast.error('Erro ao conectar ao servidor: ' + (err.message || String(err)));
     } finally {
       setLoading(false);
     }

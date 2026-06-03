@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     const despesa = await prisma.despesa.create({
       data: {
         tipo: data.tipo,
-        valor: data.valor,
+        valor: Number(data.valor),
         referente: data.referente,
         observacao: data.observacao || null,
         data_pagamento: new Date(data.data_pagamento),

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { safeSessionStorageSet } from '@/lib/storage';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
@@ -61,7 +62,7 @@ export function SindicoSecurityDialog({
       return;
     }
     // Update sessionStorage so the approval persists throughout the session
-    sessionStorage.setItem(`sindico_code_${creatorSindicoId}`, securityCode);
+    safeSessionStorageSet(`sindico_code_${creatorSindicoId}`, securityCode);
     onSuccess(securityCode);
     onOpenChange(false);
   };

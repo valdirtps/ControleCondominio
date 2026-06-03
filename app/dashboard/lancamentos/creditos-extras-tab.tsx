@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { safeSessionStorageGet } from '@/lib/storage';
 import { SindicoSecurityDialog } from '@/components/sindico-security-dialog';
 
 export function CreditosExtrasTab({ initialData, defaultMesAno }: { initialData: any[], defaultMesAno: string }) {
@@ -62,7 +63,7 @@ export function CreditosExtrasTab({ initialData, defaultMesAno }: { initialData:
     try {
       const originalItem = initialData.find(c => c.id === creditToDelete);
       const parentSindicoId = originalItem?.sindicoId;
-      const finalCode = verificationCode || (parentSindicoId ? sessionStorage.getItem(`sindico_code_${parentSindicoId}`) : null);
+      const finalCode = verificationCode || (parentSindicoId ? safeSessionStorageGet(`sindico_code_${parentSindicoId}`) : null);
 
       const headers: Record<string, string> = {};
       if (finalCode) {
@@ -125,7 +126,7 @@ export function CreditosExtrasTab({ initialData, defaultMesAno }: { initialData:
 
     try {
       const parentSindicoId = (formData as any).sindicoId;
-      const finalCode = verificationCode || (parentSindicoId ? sessionStorage.getItem(`sindico_code_${parentSindicoId}`) : null);
+      const finalCode = verificationCode || (parentSindicoId ? safeSessionStorageGet(`sindico_code_${parentSindicoId}`) : null);
 
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (finalCode) {

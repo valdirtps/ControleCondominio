@@ -57,7 +57,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       where: { id },
       data: {
         tipo,
-        valor: parseFloat(valor),
+        valor: Number(valor),
         referente,
         observacao: observacao || null,
         data_pagamento: new Date(data_pagamento),
@@ -66,9 +66,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     });
 
     return NextResponse.json(despesa);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erro ao atualizar despesa:', error);
-    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
+    return NextResponse.json({ error: 'Erro interno do servidor', details: error.message || String(error) }, { status: 500 });
   }
 }
 

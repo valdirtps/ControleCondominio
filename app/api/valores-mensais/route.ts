@@ -55,19 +55,19 @@ export async function POST(request: Request) {
         }
       },
       update: {
-        valor_agua: data.valor_agua,
-        valor_luz: data.valor_luz,
-        fundo_reserva: data.fundo_reserva,
-        taxa_condominio: data.taxa_condominio,
+        valor_agua: Number(data.valor_agua),
+        valor_luz: Number(data.valor_luz),
+        fundo_reserva: Number(data.fundo_reserva),
+        taxa_condominio: Number(data.taxa_condominio),
         observacao: data.observacao,
         sindicoId: activeSindico?.id || undefined, // associated to whoever updated it now
       },
       create: {
         mes_ano: data.mes_ano,
-        valor_agua: data.valor_agua,
-        valor_luz: data.valor_luz,
-        fundo_reserva: data.fundo_reserva,
-        taxa_condominio: data.taxa_condominio,
+        valor_agua: Number(data.valor_agua),
+        valor_luz: Number(data.valor_luz),
+        fundo_reserva: Number(data.fundo_reserva),
+        taxa_condominio: Number(data.taxa_condominio),
         observacao: data.observacao,
         condominioId: session.user.condominioId,
         sindicoId: activeSindico?.id || null,
