@@ -31,11 +31,19 @@ export function LoginForm() {
         router.push('/dashboard');
         router.refresh();
       } else {
-        const data = await res.json();
-        setError(data.error || 'Login falhou');
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const data = await res.json();
+          setError(data.error || 'Login falhou');
+        } else {
+          const text = await res.text();
+          console.error('Non-JSON response:', text);
+          setError(`Erro no servidor: ${res.status}`);
+        }
       }
     } catch (err) {
-      setError('Erro ao conectar ao servidor');
+      console.error('Fetch error:', err);
+      setError('Erro ao conectar ao servidor. Verifique sua conexão.');
     } finally {
       setLoading(false);
     }
