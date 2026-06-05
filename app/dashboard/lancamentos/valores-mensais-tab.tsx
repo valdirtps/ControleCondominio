@@ -160,7 +160,7 @@ export function ValoresMensaisTab({
         toast.success('Valores mensais salvos com sucesso!');
         setOpen(false);
         router.refresh();
-      } else if (res.status === 403) {
+      } else if (res.status === 403 || res.status === 400) {
         const errorData = await res.json();
         if (errorData.codeRequired) {
           setCreatorSindicoId(errorData.creatorSindicoId);

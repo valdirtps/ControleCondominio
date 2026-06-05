@@ -2,10 +2,10 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function main() {
-  const proprietarios = await prisma.proprietario.findMany();
-  console.log("Proprietarios:", proprietarios.length);
-  const sindico = await prisma.sindico.findFirst();
-  console.log("Sindico:", sindico);
+  const activeSindico = await prisma.sindico.findFirst({
+    where: { condominioId: 'cmos2ue0m0000lb04w30rj205', ativo: true }
+  });
+  console.log('Active Sindico:', JSON.stringify(activeSindico, null, 2));
 }
 
 main().catch(console.error).finally(() => prisma.$disconnect());

@@ -117,22 +117,33 @@ export function DespesasTab({ initialData, defaultMesAno }: { initialData: any[]
         setDeleteDialogOpen(false);
         setDespesaToDelete(null);
         router.refresh();
-      } else if (res.status === 403) {
-        const errorData = await res.json();
-        if (errorData.codeRequired) {
-          setCreatorSindicoId(errorData.creatorSindicoId);
-          setCreatorSindicoNome(errorData.creatorSindicoNome);
-          setCreatorSindicoEmail(errorData.creatorSindicoEmail);
-          setPendingAction(() => async (code: string) => {
-            await handleDelete(code);
-          });
-          setSecurityOpen(true);
-        } else {
-          toast.error(errorData.error || 'Erro de permissão');
-        }
       } else {
-        const data = await res.json();
-        toast.error(data.details ? `${data.error}: ${data.details}` : (data.error || 'Erro ao excluir despesa'));
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            const jsonText = await res.text();
+            const errorData = JSON.parse(jsonText);
+            
+            if ((res.status === 403 || res.status === 400) && errorData.codeRequired) {
+              setCreatorSindicoId(errorData.creatorSindicoId);
+              setCreatorSindicoNome(errorData.creatorSindicoNome);
+              setCreatorSindicoEmail(errorData.creatorSindicoEmail);
+              setPendingAction(() => async (code: string) => {
+                await handleDelete(code);
+              });
+              setSecurityOpen(true);
+            } else {
+              toast.error(errorData.details ? `${errorData.error}: ${errorData.details}` : (errorData.error || 'Erro ao excluir despesa'));
+            }
+          } catch (parseErr) {
+            console.error('Failed to parse error JSON for DELETE. Status:', res.status);
+            toast.error(`Erro no servidor (${res.status}). Veja o console.`);
+          }
+        } else {
+          const text = await res.text();
+          console.error('Non-JSON response from DELETE /api/despesas/[id]. Status:', res.status, 'Body:', text.substring(0, 500));
+          toast.error(`Erro no servidor: ${res.status}`);
+        }
       }
     } catch (err: any) {
       toast.error('Erro ao conectar ao servidor: ' + (err.message || String(err)));
@@ -182,22 +193,33 @@ export function DespesasTab({ initialData, defaultMesAno }: { initialData: any[]
         toast.success(editingId ? 'Despesa atualizada com sucesso!' : 'Despesa adicionada com sucesso!');
         setOpen(false);
         router.refresh();
-      } else if (res.status === 403) {
-        const errorData = await res.json();
-        if (errorData.codeRequired) {
-          setCreatorSindicoId(errorData.creatorSindicoId);
-          setCreatorSindicoNome(errorData.creatorSindicoNome);
-          setCreatorSindicoEmail(errorData.creatorSindicoEmail);
-          setPendingAction(() => async (code: string) => {
-            await handleSubmit(undefined, code);
-          });
-          setSecurityOpen(true);
-        } else {
-          toast.error(errorData.error || 'Erro de permissão');
-        }
       } else {
-        const data = await res.json();
-        toast.error(data.details ? `${data.error}: ${data.details}` : (data.error || 'Erro ao salvar'));
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            const jsonText = await res.text();
+            const errorData = JSON.parse(jsonText);
+            
+            if ((res.status === 403 || res.status === 400) && errorData.codeRequired) {
+              setCreatorSindicoId(errorData.creatorSindicoId);
+              setCreatorSindicoNome(errorData.creatorSindicoNome);
+              setCreatorSindicoEmail(errorData.creatorSindicoEmail);
+              setPendingAction(() => async (code: string) => {
+                await handleSubmit(undefined, code);
+              });
+              setSecurityOpen(true);
+            } else {
+              toast.error(errorData.details ? `${errorData.error}: ${errorData.details}` : (errorData.error || 'Erro ao salvar'));
+            }
+          } catch (parseErr) {
+            console.error('Failed to parse error JSON despite Content-Type: application/json. Status:', res.status);
+            toast.error(`Erro no servidor (${res.status}). Veja o console.`);
+          }
+        } else {
+          const text = await res.text();
+          console.error(`Non-JSON response from ${method} ${url}. Status: ${res.status}. Body:`, text.substring(0, 500));
+          toast.error(`Erro no servidor: ${res.status}`);
+        }
       }
     } catch (err: any) {
       toast.error('Erro ao conectar ao servidor: ' + (err.message || String(err)));

@@ -81,7 +81,7 @@ export function CreditosExtrasTab({ initialData, defaultMesAno }: { initialData:
         setDeleteDialogOpen(false);
         setCreditToDelete(null);
         router.refresh();
-      } else if (res.status === 403) {
+      } else if (res.status === 403 || res.status === 400) {
         const errorData = await res.json();
         if (errorData.codeRequired) {
           setCreatorSindicoId(errorData.creatorSindicoId);
@@ -150,7 +150,7 @@ export function CreditosExtrasTab({ initialData, defaultMesAno }: { initialData:
         toast.success(editingId ? 'Crédito atualizado com sucesso!' : 'Crédito adicionado com sucesso!');
         setOpen(false);
         router.refresh();
-      } else if (res.status === 403) {
+      } else if (res.status === 403 || res.status === 400) {
         const errorData = await res.json();
         if (errorData.codeRequired) {
           setCreatorSindicoId(errorData.creatorSindicoId);

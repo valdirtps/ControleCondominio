@@ -4,8 +4,11 @@ import bcrypt from 'bcryptjs';
 import { login } from '@/lib/auth';
 
 export async function POST(request: Request) {
+  console.log('Login request received');
   try {
-    const { email, password } = await request.json();
+    const body = await request.json();
+    console.log('Login body:', { ...body, password: '***' });
+    const { email, password } = body;
 
     if (!email || !password) {
       return NextResponse.json({ error: 'Email e senha são obrigatórios' }, { status: 400 });

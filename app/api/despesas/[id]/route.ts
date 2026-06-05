@@ -3,14 +3,18 @@ import prisma from '@/lib/db';
 import { getSession } from '@/lib/auth';
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  console.log('PUT /api/despesas/[id] started');
   const session = await getSession();
   if (!session) {
+    console.log('PUT /api/despesas/[id] - Unauthorized');
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
   }
 
   try {
     const { id } = await params;
+    console.log('PUT /api/despesas/[id] - ID:', id);
     const data = await request.json();
+    console.log('PUT /api/despesas/[id] - Data received:', JSON.stringify(data, null, 2));
     const { tipo, valor, referente, observacao, data_pagamento } = data;
 
     if (!tipo || !valor || !referente || !data_pagamento) {
@@ -32,13 +36,16 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     }
 
     const activeSindico = await prisma.sindico.findFirst({
-      where: { condominioId: session.user.condominioId!, ativo: true }
+      where: { condominioId: existingDespesa.condominioId, ativo: true }
     });
 
-    if (existingDespesa.sindicoId && activeSindico && existingDespesa.sindicoId !== activeSindico.id) {
+    const isDifferentSindico = existingDespesa.sindicoId && activeSindico && existingDespesa.sindicoId !== activeSindico.id;
+    const shouldCheckCode = session.user.role !== 'ADMIN_SISTEMA' && isDifferentSindico;
+
+    if (shouldCheckCode) {
       const providedCode = request.headers.get("x-verification-code") || data.codigo_verificacao;
       const creatorSindico = await prisma.sindico.findUnique({
-        where: { id: existingDespesa.sindicoId },
+        where: { id: existingDespesa.sindicoId! },
         include: { proprietario: true }
       });
 
@@ -49,7 +56,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
           creatorSindicoId: existingDespesa.sindicoId,
           creatorSindicoEmail: creatorSindico?.email_pessoal || creatorSindico?.proprietario?.email || "sindico@exemplo.com",
           creatorSindicoNome: creatorSindico ? (creatorSindico.empresa_nome || creatorSindico.proprietario?.nome || "Síndico Anterior") : "Síndico Anterior"
-        }, { status: 403 });
+        }, { status: 400 });
       }
     }
 
@@ -67,7 +74,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
     return NextResponse.json(despesa);
   } catch (error: any) {
-    console.error('Erro ao atualizar despesa:', error);
+    console.error('CRITICAL ERROR in PUT /api/despesas/[id]:', error);
+    if (error instanceof Error) {
+      console.error('Stack trace:', error.stack);
+    }
     return NextResponse.json({ error: 'Erro interno do servidor', details: error.message || String(error) }, { status: 500 });
   }
 }
@@ -96,14 +106,17 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     }
 
     const activeSindico = await prisma.sindico.findFirst({
-      where: { condominioId: session.user.condominioId!, ativo: true }
+      where: { condominioId: existingDespesa.condominioId, ativo: true }
     });
 
-    if (existingDespesa.sindicoId && activeSindico && existingDespesa.sindicoId !== activeSindico.id) {
+    const isDifferentSindico = existingDespesa.sindicoId && activeSindico && existingDespesa.sindicoId !== activeSindico.id;
+    const shouldCheckCode = session.user.role !== 'ADMIN_SISTEMA' && isDifferentSindico;
+
+    if (shouldCheckCode) {
       const urlObj = new URL(request.url);
       const providedCode = request.headers.get("x-verification-code") || urlObj.searchParams.get("codigo_verificacao");
       const creatorSindico = await prisma.sindico.findUnique({
-        where: { id: existingDespesa.sindicoId },
+        where: { id: existingDespesa.sindicoId! },
         include: { proprietario: true }
       });
 
@@ -114,7 +127,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
           creatorSindicoId: existingDespesa.sindicoId,
           creatorSindicoEmail: creatorSindico?.email_pessoal || creatorSindico?.proprietario?.email || "sindico@exemplo.com",
           creatorSindicoNome: creatorSindico ? (creatorSindico.empresa_nome || creatorSindico.proprietario?.nome || "Síndico Anterior") : "Síndico Anterior"
-        }, { status: 403 });
+        }, { status: 400 });
       }
     }
 

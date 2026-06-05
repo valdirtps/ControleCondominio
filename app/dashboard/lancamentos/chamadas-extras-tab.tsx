@@ -104,7 +104,7 @@ export function ChamadasExtrasTab({
         setDeleteDialogOpen(false);
         setItemToDelete(null);
         router.refresh();
-      } else if (res.status === 403) {
+      } else if (res.status === 403 || res.status === 400) {
         const errorData = await res.json();
         if (errorData.codeRequired) {
           setCreatorSindicoId(errorData.creatorSindicoId);
@@ -164,7 +164,7 @@ export function ChamadasExtrasTab({
         toast.success(editingId ? 'Atualizado com sucesso!' : 'Lançado com sucesso!');
         setOpen(false);
         router.refresh();
-      } else if (res.status === 403) {
+      } else if (res.status === 403 || res.status === 400) {
         const errorData = await res.json();
         if (errorData.codeRequired) {
           setCreatorSindicoId(errorData.creatorSindicoId);

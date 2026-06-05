@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -33,17 +34,28 @@ export function LoginForm() {
       } else {
         const contentType = res.headers.get('content-type');
         if (contentType && contentType.includes('application/json')) {
-          const data = await res.json();
-          setError(data.error || 'Login falhou');
+          try {
+            const jsonText = await res.text();
+            const data = JSON.parse(jsonText);
+            setError(data.error || 'Login falhou');
+            toast.error(data.error || 'Login falhou');
+          } catch (jsonErr) {
+            console.error('Failed to parse JSON. Content-Type:', contentType, 'Status:', res.status);
+            setError(`Erro na resposta do servidor: Resposta não é um JSON válido.`);
+            toast.error(`Erro: Resposta inválida`);
+          }
         } else {
           const text = await res.text();
           console.error('Non-JSON response:', text);
           setError(`Erro no servidor: ${res.status}`);
+          toast.error(`Erro no servidor: ${res.status}`);
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Fetch error:', err);
-      setError('Erro ao conectar ao servidor. Verifique sua conexão.');
+      const msg = err.message || String(err);
+      setError(`Erro ao conectar ao servidor: ${msg}`);
+      toast.error(`Erro ao conectar ao servidor: ${msg}`);
     } finally {
       setLoading(false);
     }

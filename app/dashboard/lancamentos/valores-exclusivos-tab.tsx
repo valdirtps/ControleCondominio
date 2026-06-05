@@ -94,7 +94,7 @@ export function ValoresExclusivosTab({
         setIsOpen(false);
         router.refresh();
         toast.success(editId ? 'Atualizado com sucesso!' : 'Lançado com sucesso!');
-      } else if (res.status === 403) {
+      } else if (res.status === 403 || res.status === 400) {
         const errorData = await res.json();
         if (errorData.codeRequired) {
           setCreatorSindicoId(errorData.creatorSindicoId);
@@ -166,7 +166,7 @@ export function ValoresExclusivosTab({
         toast.success('Excluído com sucesso');
         setDeleteId(null);
         router.refresh();
-      } else if (res.status === 403) {
+      } else if (res.status === 403 || res.status === 400) {
         const errorData = await res.json();
         if (errorData.codeRequired) {
           setCreatorSindicoId(errorData.creatorSindicoId);

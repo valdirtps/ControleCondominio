@@ -9,7 +9,7 @@ export default function LoginPage() {
             Sistema de Gestão de Condomínios
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Acesse sua conta para gerenciar seu condomínio
+            Acesse sua conta para gerenciar seu condomínio (v1.0.1)
           </p>
         </div>
         <LoginForm />

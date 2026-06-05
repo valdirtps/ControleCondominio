@@ -43,7 +43,7 @@ export async function POST(request: Request) {
           creatorSindicoId: existing.sindicoId,
           creatorSindicoEmail: creatorSindico?.email_pessoal || creatorSindico?.proprietario?.email || "sindico@exemplo.com",
           creatorSindicoNome: creatorSindico ? (creatorSindico.empresa_nome || creatorSindico.proprietario?.nome || "Síndico Anterior") : "Síndico Anterior"
-        }, { status: 403 });
+        }, { status: 400 });
       }
     }
 

@@ -35,7 +35,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
           creatorSindicoId: existing.sindicoId,
           creatorSindicoEmail: creatorSindico?.email_pessoal || creatorSindico?.proprietario?.email || "sindico@exemplo.com",
           creatorSindicoNome: creatorSindico ? (creatorSindico.empresa_nome || creatorSindico.proprietario?.nome || "Síndico Anterior") : "Síndico Anterior"
-        }, { status: 403 });
+        }, { status: 400 });
       }
     }
 
@@ -89,7 +89,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
           creatorSindicoId: existing.sindicoId,
           creatorSindicoEmail: creatorSindico?.email_pessoal || creatorSindico?.proprietario?.email || "sindico@exemplo.com",
           creatorSindicoNome: creatorSindico ? (creatorSindico.empresa_nome || creatorSindico.proprietario?.nome || "Síndico Anterior") : "Síndico Anterior"
-        }, { status: 403 });
+        }, { status: 400 });
       }
     }
 

@@ -13,9 +13,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Campos obrigatórios faltando' }, { status: 400 });
     }
 
+    const condominioId = data.condominioId || session.user.condominioId;
+
+    if (!condominioId) {
+      return NextResponse.json({ error: 'ID do condomínio é obrigatório' }, { status: 400 });
+    }
+
     // Find the current active property manager (síndico)
     const activeSindico = await prisma.sindico.findFirst({
-      where: { condominioId: session.user.condominioId, ativo: true },
+      where: { condominioId: condominioId, ativo: true },
     });
 
     const despesa = await prisma.despesa.create({
@@ -25,7 +31,7 @@ export async function POST(request: Request) {
         referente: data.referente,
         observacao: data.observacao || null,
         data_pagamento: new Date(data.data_pagamento),
-        condominioId: session.user.condominioId,
+        condominioId: condominioId,
         sindicoId: activeSindico?.id || null,
       },
     });
