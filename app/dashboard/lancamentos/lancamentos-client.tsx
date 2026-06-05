@@ -72,12 +72,37 @@ export function LancamentosClient({
       </div>
       
       <Tabs defaultValue="valores-mensais" className="w-full">
-        <TabsList className="w-full flex justify-start overflow-x-auto whitespace-nowrap scrollbar-none pb-1 border-b rounded-none bg-transparent">
-          <TabsTrigger value="valores-mensais" className="flex-none px-4 py-2 border-b-2 data-active:border-primary rounded-none bg-transparent data-active:bg-transparent">Valores Mensais</TabsTrigger>
-          <TabsTrigger value="chamadas-extras" className="flex-none px-4 py-2 border-b-2 data-active:border-primary rounded-none bg-transparent data-active:bg-transparent">Chamadas Extras</TabsTrigger>
-          <TabsTrigger value="despesas" className="flex-none px-4 py-2 border-b-2 data-active:border-primary rounded-none bg-transparent data-active:bg-transparent">Despesas</TabsTrigger>
-          <TabsTrigger value="valores-exclusivos" className="flex-none px-4 py-2 border-b-2 data-active:border-primary rounded-none bg-transparent data-active:bg-transparent">Valores Exclusivos</TabsTrigger>
-          <TabsTrigger value="creditos-extras" className="flex-none px-4 py-2 border-b-2 data-active:border-primary rounded-none bg-transparent data-active:bg-transparent">Outros Créditos</TabsTrigger>
+        <TabsList className="w-full h-auto flex justify-start overflow-x-auto whitespace-nowrap border-b bg-transparent gap-2 p-0 rounded-none">
+          <TabsTrigger 
+            value="valores-mensais" 
+            className="flex-none px-4 py-3 border-b-2 border-transparent data-active:border-primary data-active:text-primary rounded-none bg-transparent data-active:bg-transparent hover:text-primary/70 transition-all font-semibold text-sm -mb-[1px]"
+          >
+            Valores Mensais
+          </TabsTrigger>
+          <TabsTrigger 
+            value="chamadas-extras" 
+            className="flex-none px-4 py-3 border-b-2 border-transparent data-active:border-primary data-active:text-primary rounded-none bg-transparent data-active:bg-transparent hover:text-primary/70 transition-all font-semibold text-sm -mb-[1px]"
+          >
+            Chamadas Extras
+          </TabsTrigger>
+          <TabsTrigger 
+            value="despesas" 
+            className="flex-none px-4 py-3 border-b-2 border-transparent data-active:border-primary data-active:text-primary rounded-none bg-transparent data-active:bg-transparent hover:text-primary/70 transition-all font-semibold text-sm -mb-[1px]"
+          >
+            Despesas
+          </TabsTrigger>
+          <TabsTrigger 
+            value="valores-exclusivos" 
+            className="flex-none px-4 py-3 border-b-2 border-transparent data-active:border-primary data-active:text-primary rounded-none bg-transparent data-active:bg-transparent hover:text-primary/70 transition-all font-semibold text-sm -mb-[1px]"
+          >
+            Valores Exclusivos
+          </TabsTrigger>
+          <TabsTrigger 
+            value="creditos-extras" 
+            className="flex-none px-4 py-3 border-b-2 border-transparent data-active:border-primary data-active:text-primary rounded-none bg-transparent data-active:bg-transparent hover:text-primary/70 transition-all font-semibold text-sm -mb-[1px]"
+          >
+            Outros Créditos
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="valores-mensais">
           <ValoresMensaisTab 
