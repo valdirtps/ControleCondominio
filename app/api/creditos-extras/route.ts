@@ -16,6 +16,12 @@ export async function POST(req: Request) {
       where: { condominioId: session.user.condominioId!, ativo: true },
     });
 
+    if (!activeSindico) {
+      return NextResponse.json({ 
+        error: 'É necessário ter um síndico vigente (ativo) cadastrado para realizar lançamentos.' 
+      }, { status: 400 });
+    }
+
     const credito = await prisma.creditoExtra.create({
       data: {
         valor,
@@ -23,7 +29,7 @@ export async function POST(req: Request) {
         mes_ano,
         data_lancamento: data_lancamento ? new Date(data_lancamento) : new Date(),
         condominioId: session.user.condominioId!,
-        sindicoId: activeSindico?.id || null,
+        sindicoId: activeSindico.id,
       },
     });
 

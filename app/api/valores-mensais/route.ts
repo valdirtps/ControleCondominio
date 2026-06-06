@@ -18,6 +18,12 @@ export async function POST(request: Request) {
       where: { condominioId: session.user.condominioId, ativo: true },
     });
 
+    if (!activeSindico) {
+      return NextResponse.json({ 
+        error: 'É necessário ter um síndico vigente (ativo) cadastrado para realizar lançamentos.' 
+      }, { status: 400 });
+    }
+
     // 2. Check if a record already exists
     const existing = await prisma.valoresMensais.findUnique({
       where: {
@@ -60,7 +66,7 @@ export async function POST(request: Request) {
         fundo_reserva: Number(data.fundo_reserva),
         taxa_condominio: Number(data.taxa_condominio),
         observacao: data.observacao,
-        sindicoId: activeSindico?.id || undefined, // associated to whoever updated it now
+        sindicoId: activeSindico.id, // associated to whoever updated it now
       },
       create: {
         mes_ano: data.mes_ano,
@@ -70,7 +76,7 @@ export async function POST(request: Request) {
         taxa_condominio: Number(data.taxa_condominio),
         observacao: data.observacao,
         condominioId: session.user.condominioId,
-        sindicoId: activeSindico?.id || null,
+        sindicoId: activeSindico.id,
       },
     });
 

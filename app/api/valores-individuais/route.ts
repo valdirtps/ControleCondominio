@@ -20,6 +20,12 @@ export async function POST(req: Request) {
     const activeSindico = await prisma.sindico.findFirst({
       where: { condominioId: session.user.condominioId, ativo: true },
     });
+
+    if (!activeSindico) {
+      return NextResponse.json({ 
+        error: 'É necessário ter um síndico vigente (ativo) cadastrado para realizar lançamentos.' 
+      }, { status: 400 });
+    }
     
     const valorInd = await prisma.valoresIndividuais.create({
       data: {
@@ -28,7 +34,7 @@ export async function POST(req: Request) {
         valor: Number(valor),
         descricao,
         condominioId: session.user.condominioId,
-        sindicoId: activeSindico?.id || null,
+        sindicoId: activeSindico.id,
       }
     });
 
