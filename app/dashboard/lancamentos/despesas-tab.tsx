@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { safeSessionStorageGet } from '@/lib/storage';
+import { safeSessionStorageGet, safeSessionStorageRemove } from '@/lib/storage';
 import { SindicoSecurityDialog } from '@/components/sindico-security-dialog';
 import {
   Select,
@@ -125,6 +125,9 @@ export function DespesasTab({ initialData, defaultMesAno }: { initialData: any[]
             const errorData = JSON.parse(jsonText);
             
             if ((res.status === 403 || res.status === 400) && errorData.codeRequired) {
+              const sid = errorData.creatorSindicoId || (initialData.find(d => d.id === despesaToDelete)?.sindicoId);
+              if (sid) safeSessionStorageRemove(`sindico_code_${sid}`);
+              
               setCreatorSindicoId(errorData.creatorSindicoId);
               setCreatorSindicoNome(errorData.creatorSindicoNome);
               setCreatorSindicoEmail(errorData.creatorSindicoEmail);
@@ -201,6 +204,9 @@ export function DespesasTab({ initialData, defaultMesAno }: { initialData: any[]
             const errorData = JSON.parse(jsonText);
             
             if ((res.status === 403 || res.status === 400) && errorData.codeRequired) {
+              const sid = errorData.creatorSindicoId || (formData as any).sindicoId;
+              if (sid) safeSessionStorageRemove(`sindico_code_${sid}`);
+              
               setCreatorSindicoId(errorData.creatorSindicoId);
               setCreatorSindicoNome(errorData.creatorSindicoNome);
               setCreatorSindicoEmail(errorData.creatorSindicoEmail);

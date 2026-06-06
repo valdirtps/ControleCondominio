@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { safeSessionStorageGet } from '@/lib/storage';
+import { safeSessionStorageGet, safeSessionStorageRemove } from '@/lib/storage';
 import { format } from 'date-fns';
 import { getActiveChamadasExtras } from '@/lib/chamadas-extras';
 import { SindicoSecurityDialog } from '@/components/sindico-security-dialog';
@@ -163,6 +163,9 @@ export function ValoresMensaisTab({
       } else if (res.status === 403 || res.status === 400) {
         const errorData = await res.json();
         if (errorData.codeRequired) {
+          const sid = errorData.creatorSindicoId || (formData as any).sindicoId;
+          if (sid) safeSessionStorageRemove(`sindico_code_${sid}`);
+          
           setCreatorSindicoId(errorData.creatorSindicoId);
           setCreatorSindicoNome(errorData.creatorSindicoNome);
           setCreatorSindicoEmail(errorData.creatorSindicoEmail);

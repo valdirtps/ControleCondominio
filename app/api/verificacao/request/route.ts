@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     const nomeCondominio = sindico.condominio.nome;
 
     // Send the actual email
-    await sendMail({
+    const mailResult = await sendMail({
       to: emailDestinatario,
       subject: `Código de Segurança - ${nomeCondominio}`,
       html: `
@@ -52,6 +52,16 @@ export async function POST(request: Request) {
         </div>
       `
     });
+
+    if (!mailResult.success) {
+      console.error('Falha ao enviar e-mail de código:', mailResult.error);
+      // Even if email fails, we might still return success in dev, but in production we should report it
+      // For now, let's report it so the user knows why it "didn't send"
+      return NextResponse.json({ 
+        error: 'Falha ao enviar e-mail com o código. Verifique as configurações de SMTP.',
+        details: mailResult.error
+      }, { status: 500 });
+    }
 
     console.log(`[EMAIL] Código de segurança ${code} enviado para ${emailDestinatario}`);
 

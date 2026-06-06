@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { format } from 'date-fns';
 import { Plus, Trash2, Pencil } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { safeSessionStorageGet } from '@/lib/storage';
+import { safeSessionStorageGet, safeSessionStorageRemove } from '@/lib/storage';
 import { toast } from 'sonner';
 import { DialogFooter } from '@/components/ui/dialog';
 import { SindicoSecurityDialog } from '@/components/sindico-security-dialog';
@@ -97,6 +97,8 @@ export function ValoresExclusivosTab({
       } else if (res.status === 403 || res.status === 400) {
         const errorData = await res.json();
         if (errorData.codeRequired) {
+          const sid = errorData.creatorSindicoId || (formData as any).sindicoId;
+          if (sid) safeSessionStorageRemove(`sindico_code_${sid}`);
           setCreatorSindicoId(errorData.creatorSindicoId);
           setCreatorSindicoNome(errorData.creatorSindicoNome);
           setCreatorSindicoEmail(errorData.creatorSindicoEmail);
@@ -169,6 +171,8 @@ export function ValoresExclusivosTab({
       } else if (res.status === 403 || res.status === 400) {
         const errorData = await res.json();
         if (errorData.codeRequired) {
+          const sid = errorData.creatorSindicoId || (initialData.find(v => v.id === deleteId)?.sindicoId);
+          if (sid) safeSessionStorageRemove(`sindico_code_${sid}`);
           setCreatorSindicoId(errorData.creatorSindicoId);
           setCreatorSindicoNome(errorData.creatorSindicoNome);
           setCreatorSindicoEmail(errorData.creatorSindicoEmail);

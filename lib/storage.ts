@@ -15,3 +15,12 @@ export const safeSessionStorageSet = (key: string, value: string) => {
     // Ignore
   }
 };
+
+export const safeSessionStorageRemove = (key: string) => {
+  if (typeof window === 'undefined') return;
+  try {
+    sessionStorage.removeItem(key);
+  } catch (e) {
+    // Ignore
+  }
+};
