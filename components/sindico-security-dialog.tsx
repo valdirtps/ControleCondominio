@@ -28,7 +28,6 @@ export function SindicoSecurityDialog({
   const [loadingCode, setLoadingCode] = useState(false);
   const [codeRequested, setCodeRequested] = useState(false);
   const [securityCode, setSecurityCode] = useState('');
-  const [testCode, setTestCode] = useState<string | null>(null);
 
   const handleRequestCode = async () => {
     setLoadingCode(true);
@@ -40,10 +39,8 @@ export function SindicoSecurityDialog({
       });
 
       if (res.ok) {
-        const data = await res.json();
+        // const data = await res.json();
         setCodeRequested(true);
-        // Expose the temporary code as requested/approved for testing & developer usability
-        setTestCode(data.code);
         toast.success(`Código de segurança enviado para o e-mail: ${creatorSindicoEmail}`);
       } else {
         const errorData = await res.json();
@@ -114,16 +111,6 @@ export function SindicoSecurityDialog({
                   maxLength={6}
                 />
               </div>
-
-              {testCode && (
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
-                  <p className="font-semibold">Código Recebido (Simulação de E-mail):</p>
-                  <p className="mt-1 font-mono text-center text-lg font-bold select-all tracking-wider">{testCode}</p>
-                  <p className="mt-1 text-[10px] text-amber-700 opacity-90 leading-tight">
-                    *Esta caixa de simulação auxilia nos testes do sistema de segurança, permitindo o input e validação instantâneos sem precisar sair.
-                  </p>
-                </div>
-              )}
             </div>
           )}
         </div>

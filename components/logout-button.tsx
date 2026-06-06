@@ -10,6 +10,9 @@ export function LogoutButton() {
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
+      if (typeof window !== 'undefined') {
+        sessionStorage.clear();
+      }
       router.push('/login');
       router.refresh();
     } catch (error) {

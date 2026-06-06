@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { getSession } from '@/lib/auth';
+import { sendMail } from '@/lib/mail';
 
 export async function POST(request: Request) {
   try {
@@ -14,7 +15,7 @@ export async function POST(request: Request) {
 
     const sindico = await prisma.sindico.findUnique({
       where: { id: sindicoId },
-      include: { proprietario: true }
+      include: { proprietario: true, condominio: true }
     });
 
     if (!sindico) {
@@ -30,15 +31,32 @@ export async function POST(request: Request) {
       data: { codigo_verificacao: code }
     });
 
-    // We print it in server logs & return it in API so they can retrieve it in UI for easier dev-test
     const emailDestinatario = sindico.email_pessoal || (sindico.proprietario?.email) || "sindico@sistemacondominio.com";
     const nomeSindico = sindico.empresa_nome || (sindico.proprietario?.nome) || "Síndico Anterior";
+    const nomeCondominio = sindico.condominio.nome;
 
-    console.log(`[EMAIL SIMULADO] Código de segurança ${code} enviado com sucesso para ${emailDestinatario} (Síndico: ${nomeSindico})`);
+    // Send the actual email
+    await sendMail({
+      to: emailDestinatario,
+      subject: `Código de Segurança - ${nomeCondominio}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #334155;">
+          <h2 style="color: #1e293b;">Código de Segurança</h2>
+          <p>Olá, <strong>${nomeSindico}</strong>.</p>
+          <p>Uma solicitação de alteração/exclusão foi iniciada no condomínio <strong>${nomeCondominio}</strong> em um lançamento que você realizou originalmente.</p>
+          <p>Para autorizar esta ação, forneça o código abaixo:</p>
+          <div style="background-color: #f1f5f9; padding: 20px; border-radius: 8px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 5px; margin: 20px 0; border: 1px solid #e2e8f0;">
+            ${code}
+          </div>
+          <p style="font-size: 14px; color: #64748b;">Se você não reconhece esta ação, ignore este e-mail.</p>
+        </div>
+      `
+    });
+
+    console.log(`[EMAIL] Código de segurança ${code} enviado para ${emailDestinatario}`);
 
     return NextResponse.json({
       success: true,
-      code,
       email: emailDestinatario,
       nome: nomeSindico,
       message: `Código enviado com sucesso para ${emailDestinatario}`
