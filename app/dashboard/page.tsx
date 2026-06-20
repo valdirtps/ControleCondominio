@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { redirect } from 'next/navigation';
 
 import { BalanceteGenerator } from './balancete-generator';
+import DashboardAlerts from '@/components/DashboardAlerts';
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -127,6 +128,8 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold tracking-tight">Fluxo de Caixa</h1>
+      
+      <DashboardAlerts condominioId={condominio.id} />
       
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
