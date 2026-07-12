@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import prisma from "@/lib/db";
 import { AlertCircle, ChevronRight } from "lucide-react";
 import { differenceInDays, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
