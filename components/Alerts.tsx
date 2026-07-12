@@ -21,7 +21,7 @@ export default async function Alerts() {
 
   // Filter those overdue by more than 30 days
   const highRiskInvoices = pendingInvoices.filter(fatura => {
-    const daysOverdue = differenceInDays(today, fatura.vencimento);
+    const daysOverdue = differenceInDays(today, fatura.fatura.data_vencimento);
     return daysOverdue > 30;
   });
 
