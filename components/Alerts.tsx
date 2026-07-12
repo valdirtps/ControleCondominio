@@ -15,7 +15,7 @@ export default async function Alerts() {
       proprietario: true,
     },
     orderBy: {
-      vencimento: 'asc'
+      data_vencimento: 'asc'
     }
   });
 
