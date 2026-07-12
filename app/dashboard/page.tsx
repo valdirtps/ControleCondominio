@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { format } from 'date-fns';
 import { redirect } from 'next/navigation';
 
+import { Suspense } from 'react';
 import { BalanceteGenerator } from './balancete-generator';
 import DashboardAlerts from '@/components/DashboardAlerts';
 
@@ -25,6 +26,19 @@ export default async function DashboardPage() {
       </div>
     );
   }
+
+  // Perform maintenance tasks (non-blocking if possible, but here it's simple)
+  const now = new Date();
+  const todayMidnightUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  
+  await prisma.sindico.updateMany({
+    where: {
+      condominioId: user.condominioId,
+      ativo: true,
+      data_fim: { lt: todayMidnightUTC }
+    },
+    data: { ativo: false }
+  });
 
   const condominio = await prisma.condominio.findUnique({
     where: { id: user.condominioId },
@@ -129,7 +143,9 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <h1 className="text-3xl font-bold tracking-tight">Fluxo de Caixa</h1>
       
-      <DashboardAlerts condominioId={condominio.id} />
+      <Suspense fallback={<div className="h-16 w-full bg-slate-100 animate-pulse rounded-xl mb-6" />}>
+        <DashboardAlerts condominioId={condominio.id} />
+      </Suspense>
       
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
