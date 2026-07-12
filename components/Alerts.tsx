@@ -72,7 +72,7 @@ export default async function Alerts() {
                 <div className="text-right">
                   <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Valor</p>
                   <p className="text-lg font-black text-red-600">
-                    R$ {fatura.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    R$ {fatura.valor_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
               </div>
