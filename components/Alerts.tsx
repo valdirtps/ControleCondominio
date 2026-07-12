@@ -40,7 +40,7 @@ export default async function Alerts() {
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {highRiskInvoices.map((fatura) => {
-          const daysOverdue = differenceInDays(today, fatura.vencimento);
+          const daysOverdue = differenceInDays(today, fatura.data_vencimento);
           
           return (
             <div 
