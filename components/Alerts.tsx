@@ -66,7 +66,7 @@ export default async function Alerts() {
                 <div>
                   <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Vencimento</p>
                   <p className="text-sm font-medium text-gray-700">
-                    {format(fatura.data_vencimento, "dd 'de' MMMM, { locale: ptBR })}
+                    {format(fatura.data_vencimento, "dd 'de' MMMM", { locale: ptBR })}
                   </p>
                 </div>
                 <div className="text-right">
