@@ -54,7 +54,7 @@ export default async function Alerts() {
                     {fatura.proprietario.nome}
                   </h3>
                   <p className="text-xs text-gray-500 font-medium">
-                    {fatura.proprietario.unidade}
+                    {fatura.proprietario.apartamento}
                   </p>
                 </div>
                 <div className="bg-red-100 text-red-700 text-[10px] px-2 py-0.5 rounded-full font-bold">
