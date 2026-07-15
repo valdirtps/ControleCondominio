@@ -26,8 +26,8 @@ export function IdleTimeout() {
       if (timeoutId.current) {
         clearTimeout(timeoutId.current);
       }
-      // 5 minutos = 5 * 60 * 1000 ms = 300000 ms
-      timeoutId.current = setTimeout(handleLogout, 300000);
+      // 1 minuto = 1 * 60 * 1000 ms = 60000 ms
+      timeoutId.current = setTimeout(handleLogout, 60000);
     };
 
     const events = ['mousemove', 'keydown', 'wheel', 'mousedown', 'touchstart', 'touchmove'];
