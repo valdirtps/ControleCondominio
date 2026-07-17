@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { GerarFaturasDialog } from './gerar-faturas-dialog';
 import { SendEmailButton } from './send-email-button';
+import { SendWhatsappButton } from './send-whatsapp-button';
 import { SendBulkEmailsDialog } from './send-bulk-emails-dialog';
 import Link from 'next/link';
 
@@ -102,6 +103,7 @@ export default async function FaturasPage() {
                       PDF
                     </Button>
                     <SendEmailButton faturaId={f.id} email={f.proprietario.email} />
+                    <SendWhatsappButton faturaId={f.id} telefone={f.proprietario.telefone} mesAno={f.mes_ano} apartamento={f.proprietario.apartamento} />
                   </TableCell>
                 </TableRow>
               ))}
