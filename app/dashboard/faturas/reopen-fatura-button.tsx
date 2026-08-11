@@ -36,12 +36,14 @@ export function ReopenFaturaButton({ faturaId }: { faturaId: string }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" title="Reabrir Pagamento" className="text-orange-600 border-orange-200 hover:bg-orange-50 hover:text-orange-700">
-          <RotateCcw className="h-4 w-4 mr-1" />
-          Reabrir
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          <Button variant="outline" size="sm" title="Reabrir Pagamento" className="text-orange-600 border-orange-200 hover:bg-orange-50 hover:text-orange-700">
+            <RotateCcw className="h-4 w-4 mr-1" />
+            Reabrir
+          </Button>
+        }
+      />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Reabrir Fatura?</DialogTitle>
