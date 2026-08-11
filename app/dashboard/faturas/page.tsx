@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { GerarFaturasDialog } from './gerar-faturas-dialog';
 import { SendEmailButton } from './send-email-button';
 import { SendWhatsappButton } from './send-whatsapp-button';
+import { ReopenFaturaButton } from './reopen-fatura-button';
 import { SendBulkEmailsDialog } from './send-bulk-emails-dialog';
 import Link from 'next/link';
 
@@ -94,10 +95,12 @@ export default async function FaturasPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right space-x-2 whitespace-nowrap">
-                    {f.status !== 'PAGO' && (
+                    {f.status !== 'PAGO' ? (
                       <Button variant="default" size="sm" render={<Link href={`/dashboard/faturas/${f.id}/pagar`} />}>
                         Pagar
                       </Button>
+                    ) : (
+                      <ReopenFaturaButton faturaId={f.id} />
                     )}
                     <Button variant="outline" size="sm" render={<Link href={`/dashboard/faturas/${f.id}`} />}>
                       PDF
