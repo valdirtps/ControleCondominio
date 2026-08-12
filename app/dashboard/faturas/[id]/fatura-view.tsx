@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { Printer } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 export function FaturaView({ fatura }: { fatura: any }) {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -26,7 +27,9 @@ export function FaturaView({ fatura }: { fatura: any }) {
       const dataUrl = await toPng(element, { 
         quality: 1, 
         pixelRatio: 2,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        width: element.scrollWidth,
+        height: element.scrollHeight,
       });
       
       // Create PDF
@@ -38,25 +41,25 @@ export function FaturaView({ fatura }: { fatura: any }) {
       
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10; // Margem de 10mm
+      const usableWidth = pdfWidth - (margin * 2);
       
       const imgProps = pdf.getImageProperties(dataUrl);
-      const imgWidth = pdfWidth;
-      const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+      const imgHeight = (imgProps.height * usableWidth) / imgProps.width;
       
-      // If height is larger than page, it will scale to fit in one page 
-      // (though this invoice should easily fit A4)
-      const finalHeight = imgHeight > pdfHeight ? pdfHeight : imgHeight;
-      const finalWidth = imgHeight > pdfHeight ? (imgWidth * pdfHeight / imgHeight) : imgWidth;
+      // Se a altura for maior que a página, escala para caber (faturas geralmente cabem em uma A4)
+      const finalHeight = imgHeight > (pdfHeight - margin * 2) ? (pdfHeight - margin * 2) : imgHeight;
+      const finalWidth = imgHeight > (pdfHeight - margin * 2) ? (usableWidth * (pdfHeight - margin * 2) / imgHeight) : usableWidth;
       
-      // Center horizontally if scaled down
+      // Centraliza horizontalmente
       const xOffset = (pdfWidth - finalWidth) / 2;
       
-      pdf.addImage(dataUrl, 'PNG', xOffset, 5, finalWidth - 10, finalHeight - 10);
+      pdf.addImage(dataUrl, 'PNG', xOffset, margin, finalWidth, finalHeight);
       pdf.save(`fatura-${fatura.mes_ano}-apto-${fatura.proprietario.apartamento}.pdf`);
-      
+      toast.success('PDF gerado com sucesso!');
     } catch (e) {
-      console.error(e);
-      alert('Erro ao gerar PDF.');
+      console.error('Erro ao gerar PDF:', e);
+      toast.error('Erro ao gerar PDF');
     } finally {
       setIsGenerating(false);
     }

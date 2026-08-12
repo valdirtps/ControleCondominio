@@ -27,6 +27,11 @@ export default async function BalancetePage({ searchParams }: { searchParams: Pr
       despesas: true,
       creditosExtras: true,
       chamadasExtras: true,
+      sindicos: {
+        where: { ativo: true },
+        include: { proprietario: true },
+        orderBy: { data_inicio: 'desc' }
+      },
       faturas: {
         include: { proprietario: true }
       },
@@ -35,6 +40,14 @@ export default async function BalancetePage({ searchParams }: { searchParams: Pr
   });
 
   if (!condominio) return <div>Condomínio não encontrado.</div>;
+
+  const activeSindico = condominio.sindicos.find(s => {
+    if (!s.data_fim) return true;
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const dataFim = new Date(s.data_fim);
+    return dataFim >= today;
+  }) || condominio.sindicos[0];
 
   const getVencimentoForCycle = (referente: string | null, data_pagamento: Date) => {
     let dataCalc = data_pagamento || new Date();
@@ -138,7 +151,7 @@ export default async function BalancetePage({ searchParams }: { searchParams: Pr
     <div className="bg-white text-black min-h-screen p-8 max-w-4xl mx-auto printable-area">
       <div className="flex justify-between items-center mb-8 no-print">
         <Link href="/dashboard" className="text-blue-600 hover:underline">← Voltar</Link>
-        <BalancetePrintButton />
+        <BalancetePrintButton sindico={activeSindico} mesAno={mesAno} condominioNome={condominio.nome} />
       </div>
 
       <div className="text-center mb-8 border-b pb-6 border-gray-300">
