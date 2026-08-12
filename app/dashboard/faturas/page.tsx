@@ -3,7 +3,7 @@ import prisma from '@/lib/db';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Calculator } from 'lucide-react';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { GerarFaturasDialog } from './gerar-faturas-dialog';
@@ -11,20 +11,43 @@ import { SendEmailButton } from './send-email-button';
 import { SendWhatsappButton } from './send-whatsapp-button';
 import { ReopenFaturaButton } from './reopen-fatura-button';
 import { SendBulkEmailsDialog } from './send-bulk-emails-dialog';
+import { FaturasFilter } from './faturas-filter';
 import Link from 'next/link';
 
-export default async function FaturasPage() {
+interface PageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function FaturasPage({ searchParams }: PageProps) {
   const session = await getSession();
   if (!session) return null;
 
+  const { vencimento } = await searchParams;
+  const vencimentoStr = typeof vencimento === 'string' ? vencimento : undefined;
+
+  let whereClause: any = { condominioId: session.user.condominioId };
+
+  if (vencimentoStr) {
+    const startDate = new Date(vencimentoStr + 'T00:00:00Z');
+    const endDate = new Date(vencimentoStr + 'T23:59:59Z');
+    whereClause.data_vencimento = {
+      gte: startDate,
+      lte: endDate,
+    };
+  }
+
   const faturas = await prisma.fatura.findMany({
-    where: { condominioId: session.user.condominioId },
+    where: whereClause,
     include: { proprietario: true, condominio: true },
     orderBy: [{ mes_ano: 'desc' }, { proprietario: { apartamento: 'asc' } }],
   });
 
   // Extract unique mes_ano strings for the bulk email dropdown
   const uniqueMesAno = Array.from(new Set(faturas.map(f => f.mes_ano)));
+
+  const totalGeral = faturas.reduce((acc, f) => acc + f.valor_total, 0);
+  const totalPago = faturas.reduce((acc, f) => acc + (f.valor_pago || 0), 0);
+  const totalPendente = totalGeral - totalPago;
 
   return (
     <div className="space-y-6">
@@ -36,9 +59,41 @@ export default async function FaturasPage() {
         </div>
       </div>
 
+      <div className="grid gap-6 md:grid-cols-4">
+        <div className="md:col-span-3">
+          <FaturasFilter />
+        </div>
+        {vencimentoStr && (
+          <Card className="bg-primary/5 border-primary/20">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Calculator className="h-4 w-4" />
+                Resumo do Filtro
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Esperado:</span>
+                  <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalGeral)}</span>
+                </div>
+                <div className="flex justify-between text-sm font-bold text-primary">
+                  <span>Total Recebido:</span>
+                  <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPago)}</span>
+                </div>
+                <div className="flex justify-between text-xs text-muted-foreground border-t pt-1 mt-1">
+                  <span>A Receber:</span>
+                  <span>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPendente)}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Faturas</CardTitle>
+          <CardTitle>Lista de Faturas {vencimentoStr && `- Vencimento ${format(new Date(vencimentoStr + 'T12:00:00Z'), 'dd/MM/yyyy')}`}</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
