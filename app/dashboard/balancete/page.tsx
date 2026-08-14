@@ -151,7 +151,7 @@ export default async function BalancetePage({ searchParams }: { searchParams: Pr
     <div className="bg-white text-black min-h-screen p-8 max-w-4xl mx-auto printable-area">
       <div className="flex justify-between items-center mb-8 no-print">
         <Link href="/dashboard" className="text-blue-600 hover:underline">← Voltar</Link>
-        <BalancetePrintButton sindico={activeSindico} mesAno={mesAno} condominioNome={condominio.nome} />
+        <BalancetePrintButton sindico={activeSindico} mesAno={mesAno} condominioNome={condominio.nome} condominioId={condominio.id} />
       </div>
 
       <div className="text-center mb-8 border-b pb-6 border-gray-300">

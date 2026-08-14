@@ -7,9 +7,10 @@ interface BalancetePrintButtonProps {
   sindico?: any;
   mesAno: string;
   condominioNome: string;
+  condominioId: string;
 }
 
-export function BalancetePrintButton({ sindico, mesAno, condominioNome }: BalancetePrintButtonProps) {
+export function BalancetePrintButton({ sindico, mesAno, condominioNome, condominioId }: BalancetePrintButtonProps) {
   const handleGeneratePDF = async () => {
     const element = document.querySelector('.printable-area');
     if (!element) {
@@ -89,14 +90,19 @@ export function BalancetePrintButton({ sindico, mesAno, condominioNome }: Balanc
     }
 
     const telefone = sindico.proprietario?.telefone || sindico.telefone;
-    const cleanPhone = telefone.replace(/\D/g, '');
+    let cleanPhone = telefone.replace(/\D/g, '');
+    if (cleanPhone.length === 10 || cleanPhone.length === 11) {
+      cleanPhone = `55${cleanPhone}`;
+    }
     const [year, month] = mesAno.split('-');
     
-    const message = `Olá, segue o Balancete do Condomínio ${condominioNome} referente ao mês ${month}/${year}.`;
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const pdfUrl = `${origin}/api/balancete-pdf/${condominioId}/${mesAno}`;
+    
+    const message = `Olá, segue o Balancete do Condomínio ${condominioNome} referente ao mês ${month}/${year} (acesse o PDF diretamente neste link): ${pdfUrl}`;
     const url = `https://wa.me/${cleanPhone.startsWith('55') ? cleanPhone : '55' + cleanPhone}?text=${encodeURIComponent(message)}`;
     
-    window.open(url, '_blank');
-    toast.info('WhatsApp aberto. Lembre-se de anexar o PDF gerado!');
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   return (
