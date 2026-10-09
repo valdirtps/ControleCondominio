@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { Menu, X, Home, Users, Settings, FileText, DollarSign, UserCheck, Calendar } from 'lucide-react';
+import { LogoutButton } from '@/components/logout-button';
 
 interface MobileMenuProps {
   user: {
@@ -142,6 +143,10 @@ export function MobileMenu({ user, condominioNome }: MobileMenuProps) {
                   );
                 })}
               </nav>
+
+              <div className="pt-4 border-t border-slate-800">
+                <LogoutButton className="w-full justify-start text-slate-300 hover:text-white hover:bg-slate-800" />
+              </div>
             </motion.div>
           </>
         )}

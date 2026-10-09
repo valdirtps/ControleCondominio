@@ -14,11 +14,25 @@ export function IdleTimeout() {
 
     const handleLogout = async () => {
       try {
-        await fetch('/api/auth/logout', { method: 'POST' });
-        router.push('/login');
-        router.refresh();
+        if (typeof window !== 'undefined') {
+          try {
+            sessionStorage.clear();
+            localStorage.clear();
+            document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=None; Secure;';
+          } catch (e) {
+            console.warn('Error clearing storage:', e);
+          }
+        }
+        await fetch('/api/auth/logout', { method: 'POST', cache: 'no-store' });
       } catch (error) {
         console.error('Logout failed', error);
+      } finally {
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login?logout=true';
+        } else {
+          router.push('/login');
+        }
       }
     };
 

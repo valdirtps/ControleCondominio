@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +15,13 @@ export function LoginForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('logout=true')) {
+      toast.success('Você saiu do sistema com sucesso.');
+      window.history.replaceState({}, '', '/login');
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,8 +79,22 @@ export function LoginForm() {
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
+            <Alert variant="destructive" className="text-left">
+              <AlertDescription className="text-xs leading-relaxed space-y-2">
+                <p>{error}</p>
+                {error.includes('Supabase') && (
+                  <div className="pt-2 border-t border-destructive/20">
+                    <a
+                      href="https://supabase.com/dashboard/project/luwzppwogjnktckkkuhl"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline font-semibold hover:text-white"
+                    >
+                      Clique aqui para acessar o Painel do Supabase e reativar o projeto &rarr;
+                    </a>
+                  </div>
+                )}
+              </AlertDescription>
             </Alert>
           )}
           <div className="space-y-2">

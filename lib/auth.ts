@@ -34,7 +34,14 @@ export async function login(user: { id: string; role: string; condominioId: stri
 
 export async function logout() {
   const cookieStore = await cookies();
-  cookieStore.set('session', '', { expires: new Date(0), secure: true, sameSite: 'none' });
+  cookieStore.set('session', '', {
+    path: '/',
+    maxAge: 0,
+    expires: new Date(0),
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none',
+  });
 }
 
 export async function getSession() {

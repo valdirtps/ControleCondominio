@@ -34,8 +34,27 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Login error:', error);
+    const errorMsg = error?.message || String(error);
+    const isDbConnectionError =
+      errorMsg.includes('tenant') ||
+      errorMsg.includes('ENOTFOUND') ||
+      errorMsg.includes("Can't reach database server") ||
+      errorMsg.includes('PrismaClientInitializationError') ||
+      error?.name === 'PrismaClientInitializationError';
+
+    if (isDbConnectionError) {
+      return NextResponse.json(
+        {
+          error:
+            'O banco de dados (Supabase) está pausado ou inacessível. No plano gratuito, o Supabase pausa projetos inativos após 7 dias. Acesse o painel do Supabase (https://supabase.com/dashboard/project/luwzppwogjnktckkkuhl) e clique em "Restore project" para reativar o banco.',
+          isDbConnectionError: true,
+        },
+        { status: 503 }
+      );
+    }
+
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }

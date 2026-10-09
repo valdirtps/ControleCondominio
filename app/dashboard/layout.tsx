@@ -32,15 +32,20 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     <div className="flex min-h-screen bg-background">
       <IdleTimeout />
       {/* Sidebar */}
-      <aside className="w-64 bg-slate-900 text-slate-50 border-r border-slate-800 shadow-sm hidden md:block">
+      <aside className="w-64 bg-slate-900 text-slate-50 border-r border-slate-800 shadow-sm hidden md:flex md:flex-col">
         <div className="p-4 border-b border-slate-800">
           <h1 className="text-xl font-bold text-white">Gestão Condomínio</h1>
           <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">{user.nome}</p>
           {condominioNome && (
             <p className="text-sm text-red-500 font-bold mt-1">{condominioNome}</p>
           )}
+          {user.role === 'ADMIN_SISTEMA' && (
+            <span className="inline-block mt-2 text-[10px] font-semibold px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase tracking-wider">
+              Admin Sistema
+            </span>
+          )}
         </div>
-        <nav className="p-4 space-y-1">
+        <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
           <Link href="/dashboard" className="flex items-center gap-3 p-2.5 rounded-lg transition-colors hover:bg-slate-800 text-slate-300 hover:text-white font-medium">
             <Home size={18} /> Fluxo de Caixa
           </Link>
@@ -74,6 +79,9 @@ export default async function DashboardLayout({ children }: { children: ReactNod
             </>
           )}
         </nav>
+        <div className="p-4 border-t border-slate-800">
+          <LogoutButton className="w-full justify-start text-slate-400 hover:text-white hover:bg-slate-800" />
+        </div>
       </aside>
 
       {/* Main Content */}
@@ -87,8 +95,14 @@ export default async function DashboardLayout({ children }: { children: ReactNod
               {condominioNome && <div className="text-xs text-red-500 font-bold leading-tight">{condominioNome}</div>}
             </div>
           </div>
-          <div className="hidden md:block"></div>
-          <LogoutButton />
+          <div className="hidden md:flex md:items-center md:gap-3">
+            {user.role === 'ADMIN_SISTEMA' && (
+              <span className="text-xs font-semibold px-2.5 py-1 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                Painel: Administrador do Sistema
+              </span>
+            )}
+          </div>
+          <LogoutButton className="text-slate-300 hover:text-white hover:bg-slate-800" />
         </header>
 
         {/* Page Content */}
